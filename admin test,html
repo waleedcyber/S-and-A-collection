@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Upload - Anty Sa'a Store</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #ff6b6b;
+    }
+
+    form {
+      max-width: 500px;
+      margin: 30px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #ff6b6b;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #ff4040;
+    }
+
+    .view-products {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Upload New Product</h1>
+  <form id="uploadForm">
+    <input type="text" name="name" placeholder="Product Name" required />
+    <textarea name="description" placeholder="Description" required></textarea>
+    <input type="number" name="price" placeholder="Price (₦)" step="0.01" required />
+    <input type="number" name="quantity" placeholder="Quantity" required />
+    <select name="category_id" required>
+      <option value="1">Fashion</option>
+      <option value="2">Electronics</option>
+      <option value="3">Beauty</option>
+    </select>
+    <input type="file" name="image" accept="image/*" required />
+    <button type="submit">Upload Product</button>
+  </form>
+  <a href="/products.html" class="view-products">View All Products</a>
+
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+
+      try {
+        const res = await fetch('http://127.0.0.1:8000/admin/upload', {
+          method: 'POST',
+          body: formData,
+          // headers: { Authorization: `Bearer <your_token>` } // Uncomment when JWT is ready
+        });
+
+        if (res.ok) {
+          alert('Product uploaded successfully!');
+          form.reset();
+        } else {
+          alert('Upload failed');
+        }
+      } catch (err) {
+        alert('An error occurred');
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>

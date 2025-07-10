@@ -1,0 +1,108 @@
+for adimin_productUpload:
+admin_productUpload.html:94  POST http://127.0.0.1:8000/products 405 (Method Not Allowed)
+and for adminupload.test: 
+this is in the terminal
+        changed in V2:
+        * 'orm_mode' has been renamed to 'from_attributes'
+        warnings.warn(message, UserWarning)
+        INFO:     Started server process [3284]
+        INFO:     Waiting for application startup.
+        INFO:     Application startup complete.
+        INFO:     127.0.0.1:56670 - "OPTIONS /products HTTP/1.1" 200 OK
+        INFO:     127.0.0.1:56670 - "POST /products HTTP/1.1" 405 Method Not Allowed
+        INFO:     127.0.0.1:56727 - "POST /admin/upload HTTP/1.1" 500 Internal Server Error
+        ERROR:    Exception in ASGI application
+        Traceback (most recent call last):
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 403, in run_asgi   
+            result = await app(  # type: ignore[func-returns-value]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                self.scope, self.receive, self.send
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            )
+            ^
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__   
+            return await self.app(scope, receive, send)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+            await super().__call__(scope, receive, send)
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\applications.py", line 112, in __call__
+            await self.middleware_stack(scope, receive, send)
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\middleware\errors.py", line 187, in __call__       
+            raise exc
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\middleware\errors.py", line 165, in __call__       
+            await self.app(scope, receive, _send)
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\middleware\cors.py", line 93, in __call__
+            await self.simple_response(scope, receive, send, request_headers=headers)
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\middleware\cors.py", line 144, in simple_response  
+            await self.app(scope, receive, send)
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__    
+            await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app    
+            raise exc
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app    
+            await app(scope, receive, sender)
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\routing.py", line 714, in __call__
+            await self.middleware_stack(scope, receive, send)
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\routing.py", line 734, in app
+            await route.handle(scope, receive, send)
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\routing.py", line 288, in handle
+            await self.app(scope, receive, send)
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\routing.py", line 76, in app
+            await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app    
+            raise exc
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app    
+            await app(scope, receive, sender)
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\routing.py", line 73, in app
+            response = await f(request)
+                    ^^^^^^^^^^^^^^^^
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\fastapi\routing.py", line 301, in app
+            raw_response = await run_endpoint_function(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            ...<3 lines>...
+            )
+            ^
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\fastapi\routing.py", line 214, in run_endpoint_function      
+            return await run_in_threadpool(dependant.call, **values)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\starlette\concurrency.py", line 37, in run_in_threadpool     
+            return await anyio.to_thread.run_sync(func)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\anyio\to_thread.py", line 56, in run_sync
+            return await get_async_backend().run_sync_in_worker_thread(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            )
+            ^
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2470, in run_sync_in_worker_thread
+            return await future
+                ^^^^^^^^^^^^
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+            result = context.run(func, *args)
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\routes\product.py", line 84, in upload_product
+            product = models.Product(
+                name=name,
+            ...<4 lines>...
+                image_url=image_url
+            )
+        File "<string>", line 4, in __init__
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\sqlalchemy\orm\state.py", line 571, in _initialize_instance  
+            with util.safe_reraise():
+                ~~~~~~~~~~~~~~~~~^^
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 224, in __exit__       
+            raise exc_value.with_traceback(exc_tb)
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\sqlalchemy\orm\state.py", line 569, in _initialize_instance  
+            manager.original_init(*mixed[1:], **kwargs)
+            ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\Users\yahaya abdullahi\Desktop\anty sa'a website\venv\Lib\site-packages\sqlalchemy\orm\decl_base.py", line 2173, in _declarative_constructor
+            raise TypeError(
+                "%r is an invalid keyword argument for %s" % (k, cls_.__name__)
+            )
+        TypeError: 'category_id' is an invalid keyword argument for Product
+and for admin product upload 2:
+in the terminal
+        INFO:     127.0.0.1:56993 - "POST /admin/upload HTTP/1.1" 422 Unprocessable Content
+and for add_product.html
+in the javascript alert it says 
+        ---You must be logged in first.

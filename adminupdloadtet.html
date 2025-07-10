@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Upload Product</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background: #f2f2f2;
+    }
+    h2 {
+      text-align: center;
+    }
+    form {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    .success {
+      color: green;
+      text-align: center;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Upload New Product</h2>
+  <form id="uploadForm">
+    <input type="text" name="name" placeholder="Product Name" required />
+    <textarea name="description" placeholder="Description" required></textarea>
+    <input type="number" name="price" placeholder="Price" step="0.01" required />
+    <input type="number" name="quantity" placeholder="Quantity" required />
+    <select name="category_id" required>
+      <option value="1">Fashion</option>
+      <option value="2">Electronics</option>
+      <option value="3">Beauty</option>
+    </select>
+    <input type="file" name="image" accept="image/*" required />
+    <button type="submit">Upload Product</button>
+    <p id="message" class="success" style="display:none;">✅ Product uploaded successfully!</p>
+  </form>
+
+  <script>
+  document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/admin/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.message) {
+        document.getElementById('message').textContent = "✅ " + result.message;
+        document.getElementById('message').style.display = 'block';
+        form.reset();
+      } else {
+        document.getElementById('message').textContent = "❌ Upload failed: " + (result.detail || "Something went wrong.");
+        document.getElementById('message').style.color = "red";
+        document.getElementById('message').style.display = 'block';
+      }
+    } catch (error) {
+      document.getElementById('message').textContent = "❌ Error: " + error.message;
+      document.getElementById('message').style.color = "red";
+      document.getElementById('message').style.display = 'block';
+    }
+  });
+</script>
+
+</body>
+</html>

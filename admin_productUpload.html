@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Upload Product</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+    }
+
+    header {
+      background-color: #333;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .form-container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Admin Dashboard</h1>
+    <p>Upload New Product</p>
+  </header>
+
+  <div class="form-container">
+    <h2>Add Product</h2>
+    <form id="productForm">
+      <input type="text" name="name" placeholder="Product Name" required>
+      <input type="number" name="price" placeholder="Price (₦)" required>
+      <input type="text" name="image_url" placeholder="Image URL">
+      <select name="category_id" required>
+        <option value="">-- Select Category --</option>
+        <option value="1">Fashion</option>
+        <option value="2">Electronics</option>
+        <option value="3">Beauty</option>
+      </select>
+      <textarea name="description" rows="4" placeholder="Product Description"></textarea>
+      <input type="number" name="quantity" placeholder="Quantity" required>
+      <button type="submit">Upload Product</button>
+    </form>
+    <p id="responseMsg"></p>
+  </div>
+
+  <script>
+    document.getElementById('productForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const form = e.target;
+      const data = {
+        name: form.name.value,
+        price: parseFloat(form.price.value),
+        image_url: form.image_url.value,
+        category_id: parseInt(form.category_id.value),
+        description: form.description.value,
+        quantity: parseInt(form.quantity.value)
+      };
+
+      const res = await fetch('http://127.0.0.1:8000/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      const msg = document.getElementById('responseMsg');
+      if (res.ok) {
+        msg.style.color = 'green';
+        msg.innerText = '✅ Product uploaded successfully!';
+        form.reset();
+      } else {
+        msg.style.color = 'red';
+        msg.innerText = '❌ Upload failed.';
+      }
+    });
+  </script>
+</body>
+</html>
