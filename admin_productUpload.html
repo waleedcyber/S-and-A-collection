@@ -71,6 +71,7 @@
         <option value="3">Beauty</option>
       </select>
       <textarea name="description" rows="4" placeholder="Product Description"></textarea>
+      <input type="file" name="image" accept="image/*" required />
       <input type="number" name="quantity" placeholder="Quantity" required>
       <button type="submit">Upload Product</button>
     </form>
@@ -82,21 +83,24 @@
       e.preventDefault();
 
       const form = e.target;
-      const data = {
-        name: form.name.value,
-        price: parseFloat(form.price.value),
-        image_url: form.image_url.value,
-        category_id: parseInt(form.category_id.value),
-        description: form.description.value,
-        quantity: parseInt(form.quantity.value)
-      };
+      const formData = new FormData();
+
+      formData.append('name', form.name.value);
+      formData.append('price', form.price.value);
+      formData.append('image_url', form.image_url.value);
+      formData.append('category_id', form.category_id.value);
+      formData.append('description', form.description.value);
+      formData.append('quantity', form.quantity.value);
+
+      // Append the file if selected
+      if (form.image.files.length > 0) {
+        formData.append('image', form.image.files[0]);
+      }
 
       const res = await fetch('http://127.0.0.1:8000/products', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
+        body: formData
+        // Do NOT set Content-Type header; browser will set it automatically for FormData
       });
 
       const msg = document.getElementById('responseMsg');
