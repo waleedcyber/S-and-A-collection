@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>S&A Collection</title>
   <style>
     body {
@@ -19,6 +19,27 @@
       position: sticky;
       top: 0;
       z-index: 1000;
+    }
+
+    .browse-all {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .browse-all a {
+      background-color: white;
+      color: #ff6b6b;
+      border: 2px solid #ff6b6b;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.3s ease;
+    }
+
+    .browse-all a:hover {
+      background-color: #ff6b6b;
+      color: white;
     }
 
     .filters {
@@ -128,6 +149,10 @@
     <p>Explore our most popular and trending products</p>
   </header>
 
+  <div class="browse-all">
+    <a href="product.html">Browse All Products 🛍️</a>
+  </div>
+
   <div class="filters">
     <select id="categoryFilter">
       <option value="all">All Categories</option>
@@ -144,7 +169,7 @@
       <div class="card-content">
         <h3>Fashion & Clothing</h3>
         <p>Trendy outfits and styles for all ages.</p>
-        <a href="/category/1">Shop Fashion</a>
+        <a href="product.html?category=1">Shop Fashion</a>
         <div class="random-products">
           <img src="https://via.placeholder.com/60?text=Shoes" alt="Shoes">
           <img src="https://via.placeholder.com/60?text=Dress" alt="Dress">
@@ -161,7 +186,7 @@
       <div class="card-content">
         <h3>Electronics</h3>
         <p>Gadgets, kitchen appliances, accessories, and more.</p>
-        <a href="/category/2">Browse Electronics</a>
+        <a href="product.html?category=2">Browse Electronics</a>
         <div class="random-products">
           <img src="https://via.placeholder.com/60?text=Phone" alt="Phone">
           <img src="https://via.placeholder.com/60?text=Blender" alt="Blender">
@@ -178,7 +203,7 @@
       <div class="card-content">
         <h3>Beauty & Care</h3>
         <p>Skincare, makeup, and self-care essentials.</p>
-        <a href="/category/3">See Beauty Products</a>
+        <a href="product.html?category=3">See Beauty Products</a>
         <div class="random-products">
           <img src="https://via.placeholder.com/60?text=Soap" alt="Soap">
           <img src="https://via.placeholder.com/60?text=Lotion" alt="Lotion">

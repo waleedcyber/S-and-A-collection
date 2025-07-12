@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
@@ -34,14 +34,17 @@ class Order(Base):
     __tablename__ = "orders"
 
     id = Column(Integer, primary_key=True, index=True)
-    product_id = Column(Integer, ForeignKey("products.id"))
-    quantity = Column(Integer, default=1)
-    customer_name = Column(String)
-    customer_address = Column(String)
+    order_id = Column(String, unique=True, index=True, nullable=False)
+    customer_name = Column(String, nullable=False)
+    customer_email = Column(String, nullable=False)
+    customer_address = Column(String, nullable=True)
+
+    item_names = Column(Text, nullable=False)  # 👈 List of names only (e.g. "Soap, Phone, Bag")
+    items = Column(Text, nullable=False)       # 👈 Full JSON details: name, quantity, price
+
+    total = Column(Float, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
     status = Column(String, default="pending")
-
-    product = relationship("Product", back_populates="orders")
 
 class Admin(Base):
     __tablename__ = "admins"

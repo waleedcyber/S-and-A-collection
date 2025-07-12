@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Shopping Cart - Anty Sa'a Store</title>
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
+      background-color: #f8f8f8;
     }
 
     header {
@@ -16,15 +16,18 @@
       color: white;
       padding: 20px;
       text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
 
     .cart-container {
       max-width: 800px;
       margin: 30px auto;
       background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
     .cart-item {
@@ -33,7 +36,7 @@
       justify-content: space-between;
       margin-bottom: 20px;
       border-bottom: 1px solid #eee;
-      padding-bottom: 10px;
+      padding-bottom: 15px;
     }
 
     .cart-item img {
@@ -54,8 +57,23 @@
     }
 
     .cart-item-details p {
-      margin: 5px 0 0;
+      margin: 5px 0;
       color: #666;
+    }
+
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quantity-btn {
+      padding: 5px 10px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 6px;
+      border: none;
+      background-color: #ddd;
     }
 
     .remove-btn {
@@ -74,7 +92,71 @@
     .empty-msg {
       text-align: center;
       font-size: 18px;
-      color: #666;
+      color: #777;
+      margin-top: 40px;
+    }
+
+    .cart-summary {
+      margin-top: 20px;
+      border-top: 1px solid #ddd;
+      padding-top: 15px;
+      text-align: right;
+    }
+
+    .cart-summary h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .button {
+  padding: 12px 20px;
+  background: #2d89ef;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.button:hover {
+  background: #1b5cb8;
+}
+
+.floating-checkout {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #28a745;
+  color: white;
+  padding: 14px 20px;
+  border-radius: 50px;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transition: background 0.3s ease;
+  z-index: 100;
+}
+
+.floating-checkout:hover {
+  background: #218838;
+}
+
+
+    .checkout-btn {
+      margin-top: 15px;
+      padding: 12px 20px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .checkout-btn:hover {
+      background-color: #218838;
     }
   </style>
 </head>
@@ -84,8 +166,9 @@
   </header>
 
   <div class="cart-container" id="cartContainer">
-    <!-- Cart items will appear here -->
+    <!-- Cart items will be displayed here -->
   </div>
+  <a href="checkout.html"><button class="button">Proceed to Checkout ➡️</button></a>
 
   <script>
     const cartContainer = document.getElementById('cartContainer');
@@ -95,23 +178,43 @@
       cartContainer.innerHTML = '';
 
       if (cart.length === 0) {
-        cartContainer.innerHTML = '<p class="empty-msg">Your cart is empty.</p>';
+        cartContainer.innerHTML = '<p class="empty-msg">🛒 Your cart is empty.</p>';
+        updateCartCount();
         return;
       }
 
+      let total = 0;
+
       cart.forEach((item, index) => {
+        total += item.price * (item.quantity || 1);
+
         const div = document.createElement('div');
         div.className = 'cart-item';
         div.innerHTML = `
-          <img src="${item.image_url}" alt="${item.name}" />
+          <img src="${item.image_url || 'https://via.placeholder.com/60'}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/60';" />
           <div class="cart-item-details">
             <h4>${item.name}</h4>
             <p>₦${item.price}</p>
+            <div class="quantity-controls">
+              <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">−</button>
+              <span>${item.quantity || 1}</span>
+              <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
+            </div>
           </div>
           <button class="remove-btn" onclick="removeFromCart(${index})">Remove</button>
         `;
         cartContainer.appendChild(div);
       });
+
+      const summary = document.createElement('div');
+      summary.className = 'cart-summary';
+      summary.innerHTML = `
+        <h3>Total: ₦${total}</h3>
+        <button class="checkout-btn" onclick="goToCheckout()">Proceed to Checkout</button>
+      `;
+      cartContainer.appendChild(summary);
+
+      updateCartCount();
     }
 
     function removeFromCart(index) {
@@ -121,7 +224,33 @@
       renderCart();
     }
 
+    function updateQuantity(index, change) {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      cart[index].quantity = (cart[index].quantity || 1) + change;
+      if (cart[index].quantity <= 0) {
+        cart.splice(index, 1);
+      }
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderCart();
+    }
+
+    function updateCartCount() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      let count = 0;
+      cart.forEach(item => {
+        count += item.quantity || 1;
+      });
+
+      const icon = document.getElementById('cartCount');
+      if (icon) icon.innerText = count;
+    }
+
+    function goToCheckout() {
+      window.location.href = 'checkout.html';
+    }
+
     renderCart();
   </script>
 </body>
 </html>
+

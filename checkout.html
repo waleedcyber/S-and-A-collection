@@ -1,0 +1,65 @@
+<script>
+  const orderList = document.getElementById('orderList');
+  const orderTotal = document.getElementById('orderTotal');
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+  let total = 0;
+  cart.forEach(item => {
+    const li = document.createElement('li');
+    const qty = item.quantity || 1;
+    li.textContent = `${item.name} (x${qty}) - ₦${item.price * qty}`;
+    orderList.appendChild(li);
+    total += item.price * qty;
+  });
+
+  orderTotal.innerText = total;
+
+  const form = document.getElementById('checkoutForm');
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const name = form.name.value;
+    const email = form.email.value;
+    const phone = form.phone.value;
+    const address = form.address.value;
+
+    const items = cart.map(item => ({
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity || 1
+    }));
+
+    const orderData = {
+      name,
+      email,
+      phone,
+      address,
+      items,
+      total
+    };
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || 'Order failed');
+      }
+
+      const result = await response.json();
+      alert(`✅ Order placed successfully 😊! Your Order ID is: ${result.order_id}`);
+      localStorage.removeItem('cart');
+      window.location.href = 'product.html';
+    } catch (error) {
+      alert('❌ Failed to place order: ' + error.message);
+      console.error(error);
+    }
+  });
+</script>

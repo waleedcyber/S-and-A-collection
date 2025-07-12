@@ -4,9 +4,17 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from uuid import uuid4
+import sys
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+ 
+from utils.order_id_generator import generate_order_id
+
 from typing import Optional
 
+from fastapi import Body
+from schemas import OrderCreate
+import json
 
 import shutil
 import os
@@ -94,6 +102,42 @@ def upload_product(
     db.refresh(product)
 
     return {"message": "Product uploaded successfully", "product": product}
+
+from fastapi import Depends, APIRouter, HTTPException
+from sqlalchemy.orm import Session
+from utils.order_id_generator import generate_order_id
+from database_setup import get_db
+from models import Order  # assuming you have this
+from schemas import OrderCreate  # assuming your Pydantic input model
+import json
+
+router = APIRouter()
+
+@router.post("/orders")
+def create_order(order: OrderCreate, db: Session = Depends(get_db)):
+    order_id = generate_order_id()
+
+    item_names = ", ".join([item.name for item in order.items])  # 👈 Add item names
+    items_json = json.dumps([item.dict() for item in order.items])  # 👈 Store full item details
+
+    new_order = Order(
+        order_id=order_id,
+        customer_name=order.name,
+        customer_email=order.email,
+        customer_address=order.address or "",
+        item_names=item_names,
+        items=items_json,
+        total=order.total,
+    )
+
+    db.add(new_order)
+    db.commit()
+    db.refresh(new_order)
+
+    return {
+        "message": "Order placed successfully ✅",
+        "order_id": order_id
+    }
 
 @router.get("/products")
 def get_products(db: Session = Depends(get_db)):
