@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 from db import Base
+
 Base = declarative_base()
 
 class Product(Base):
@@ -16,7 +17,6 @@ class Product(Base):
     image_url = Column(String)
     quantity = Column(Integer, default=0)
 
-    orders = relationship("Order", back_populates="product")
     
     
 class ProductRequest(Base):
@@ -30,6 +30,7 @@ class ProductRequest(Base):
     product = relationship("Product")
 
 
+
 class Order(Base):
     __tablename__ = "orders"
 
@@ -39,8 +40,8 @@ class Order(Base):
     customer_email = Column(String, nullable=False)
     customer_address = Column(String, nullable=True)
 
-    item_names = Column(Text, nullable=False)  # 👈 List of names only (e.g. "Soap, Phone, Bag")
-    items = Column(Text, nullable=False)       # 👈 Full JSON details: name, quantity, price
+    item_names = Column(Text, nullable=False)  # e.g., "Soap, Shampoo"
+    items = Column(Text, nullable=False)       # JSON string of products
 
     total = Column(Float, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)

@@ -1,65 +1,126 @@
-<script>
-  const orderList = document.getElementById('orderList');
-  const orderTotal = document.getElementById('orderTotal');
-  const cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-  let total = 0;
-  cart.forEach(item => {
-    const li = document.createElement('li');
-    const qty = item.quantity || 1;
-    li.textContent = `${item.name} (x${qty}) - ₦${item.price * qty}`;
-    orderList.appendChild(li);
-    total += item.price * qty;
-  });
-
-  orderTotal.innerText = total;
-
-  const form = document.getElementById('checkoutForm');
-
-  form.addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    const name = form.name.value;
-    const email = form.email.value;
-    const phone = form.phone.value;
-    const address = form.address.value;
-
-    const items = cart.map(item => ({
-      name: item.name,
-      price: item.price,
-      quantity: item.quantity || 1
-    }));
-
-    const orderData = {
-      name,
-      email,
-      phone,
-      address,
-      items,
-      total
-    };
-
-    try {
-      const response = await fetch('http://127.0.0.1:8000/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(orderData)
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.detail || 'Order failed');
-      }
-
-      const result = await response.json();
-      alert(`✅ Order placed successfully 😊! Your Order ID is: ${result.order_id}`);
-      localStorage.removeItem('cart');
-      window.location.href = 'product.html';
-    } catch (error) {
-      alert('❌ Failed to place order: ' + error.message);
-      console.error(error);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Checkout - S&A Collection</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f7f7f7;
+      padding: 30px;
     }
-  });
-</script>
+    .checkout-container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+    input, textarea, button {
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .cart-summary {
+      background: #f0f0f0;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="checkout-container">
+    <h2>Checkout</h2>
+
+    <div class="cart-summary" id="cart-summary">
+      <!-- Cart items and total will show here -->
+    </div>
+
+    <form id="checkout-form">
+      <input type="text" id="name" placeholder="Full Name" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <textarea id="address" placeholder="Delivery Address (optional)"></textarea>
+      <button type="submit">Place Order</button>
+    </form>
+
+    <p id="message" style="text-align:center;"></p>
+  </div>
+
+ 
+
+
+    <script>
+        const orderList = document.getElementById('orderList');
+        const orderTotal = document.getElementById('orderTotal');
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        let total = 0;
+        cart.forEach(item => {
+            const li = document.createElement('li');
+            const qty = item.quantity || 1;
+            li.textContent = `${item.name} (x${qty}) - ₦${item.price * qty}`;
+            orderList.appendChild(li);
+            total += item.price * qty;
+     });
+
+        orderTotal.innerText = total;
+
+        const form = document.getElementById('checkoutForm');
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const name = form.name.value;
+            const email = form.email.value;
+            const phone = form.phone.value;
+            const address = form.address.value;
+
+            const items = cart.map(item => ({
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity || 1
+            }));
+
+            const orderData = {
+            name,
+            email,
+            phone,
+            address,
+            items,
+            total
+            };
+
+            try {
+            const response = await fetch('http://127.0.0.1:8000/orders', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderData)
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail || 'Order failed');
+            }
+
+            const result = await response.json();
+            alert(`✅ Order placed successfully 😊! Your Order ID is: ${result.order_id}`);
+            localStorage.removeItem('cart');
+            window.location.href = 'product.html';
+            } catch (error) {
+            alert('❌ Failed to place order: ' + error.message);
+            console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>

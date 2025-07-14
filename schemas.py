@@ -11,8 +11,10 @@ class ProductOut(BaseModel):
     price: float
     quantity: int
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }
+        
 
 class OrderItem(BaseModel):
     name: str

@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import declarative_base
+from sqlalchemy.ext.declarative import declarative_base
 from db import Base, engine
 import models  # makes sure all tables are seen
 
@@ -20,6 +21,9 @@ engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 # Create a session
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+from models import Admin
+
+Base = declarative_base()
 # Create tables
 def create_tables():
     Base.metadata.create_all(bind=engine)
@@ -27,3 +31,10 @@ if __name__ == "__main__":
     create_tables()
     print("✅ Tables created successfully!")
 # This script sets up the database connection and creates the necessary tables.
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

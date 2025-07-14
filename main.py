@@ -12,15 +12,10 @@ from models import Admin, Product, ProductRequest, Order
 from schemas import ProductOut
 import auth
 
-from routes.product import router as product_router
-
-app = FastAPI()
-app.include_router(product_router)
-
-# 🔥 Create app first
+# ✅ Create FastAPI app
 app = FastAPI()
 
-# 🔗 Allow frontend requests
+# ✅ CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,16 +24,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 📦 Mount uploads or static files (e.g., for image serving)
+# ✅ Serve static/uploads
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")  # Add this if handling image uploads
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-# 🔄 DB startup
+# ✅ DB startup
 @app.on_event("startup")
 def startup():
     create_tables()
 
-# --- Reusable DB session ---
+# ✅ Reusable DB session
 def get_db():
     db = SessionLocal()
     try:
@@ -46,7 +41,7 @@ def get_db():
     finally:
         db.close()
 
-# --- Auth JWT dependency ---
+# ✅ Auth JWT dependency
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/admin/login")
 
 def get_current_admin(token: str = Depends(oauth2_scheme)):
@@ -64,11 +59,12 @@ def get_current_admin(token: str = Depends(oauth2_scheme)):
     except JWTError:
         raise credentials_exception
 
-# --- Routes ---
+# ✅ Root route
 @app.get("/")
 def read_root():
     return {"message": "Welcome to your shopping site 🛍️"}
 
+# ✅ Admin login
 @app.post("/admin/login")
 def login_admin(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     admin = db.query(Admin).filter(Admin.username == form_data.username).first()
@@ -77,34 +73,12 @@ def login_admin(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     access_token = auth.create_access_token(data={"sub": admin.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
-@app.post("/admin/add-product")
-def add_product(
-    name: str = Form(...),
-    description: str = Form(...),
-    price: float = Form(...),
-    quantity: int = Form(...),
-    db: Session = Depends(get_db),
-    current_admin: str = Depends(get_current_admin)
-):
-    product = Product(name=name, description=description, price=price, quantity=quantity)
-    db.add(product)
-    db.commit()
-    db.refresh(product)
-    return {
-        "message": "Product added",
-        "product": {
-            "id": product.id,
-            "name": product.name,
-            "description": product.description,
-            "price": product.price,
-            "quantity": product.quantity 
-        }
-    }
-
+# ✅ Admin-only route for product requests
 @app.get("/admin/product-requests")
 def get_product_requests(db: Session = Depends(get_db), current_admin: str = Depends(get_current_admin)):
     return db.query(ProductRequest).all()
 
+# ✅ Route to request product (user side)
 @app.post("/request-product")
 def request_product(
     product_id: int = Form(...),
@@ -122,10 +96,7 @@ def request_product(
     db.refresh(request)
     return {"message": "Request submitted", "request_id": request.id}
 
-@app.get("/products", response_model=List[ProductOut])
-def list_products(db: Session = Depends(get_db)):
-    return db.query(Product).all()
-
+# ✅ Optional legacy route (still OK to keep if you're using Form-based order)
 @app.post("/order")
 def place_order(
     product_id: int = Form(...),
@@ -157,6 +128,13 @@ def place_order(
         }
     }
 
-# ✅ Finally: Import and include custom routers (after app is created)
+# ✅ Product list for old route (still OK)
+@app.get("/products", response_model=List[ProductOut])
+def list_products(db: Session = Depends(get_db)):
+    return db.query(Product).all()
+
+# ✅ Import and include routers
 from routes.product import router as product_router
+from routes.admin import router as admin_router
 app.include_router(product_router)
+app.include_router(admin_router)
