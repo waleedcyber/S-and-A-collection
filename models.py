@@ -47,6 +47,11 @@ class Order(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
     status = Column(String, default="pending")
 
+    payment_status = Column(String, default="pending")  # or use Boolean
+    payment_reference = Column(String, nullable=True)   # Paystack/Flutterwave ref
+    paid_at = Column(DateTime, nullable=True)
+
+
 class Admin(Base):
     __tablename__ = "admins"
 
