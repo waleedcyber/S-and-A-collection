@@ -1,10 +1,13 @@
-from database_setup import SessionLocal
+from database_setup import SessionLocal, create_tables  # ✅ Import create_tables
 from models import Admin
 from auth import get_password_hash
 
+# --- ✅ Create tables before using them ---
+create_tables()
+
 # --- Define your new credentials here ---
 new_username = "waleed"
-new_password = "wal33d"  # You can change this
+new_password = "wal33d"
 
 # --- Step 1: Connect to DB
 db = SessionLocal()
