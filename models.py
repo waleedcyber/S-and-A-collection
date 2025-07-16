@@ -4,7 +4,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 from db import Base
 
-Base = declarative_base()
 
 class Product(Base):
     __tablename__ = "products"
