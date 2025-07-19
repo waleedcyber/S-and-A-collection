@@ -77,36 +77,36 @@
     <p id="responseMsg"></p>
   </div>
 
-  <script>
-    // Check if the user is logged in
-  //  window.onload = function () {
- // const token = localStorage.getItem("token");
- // if (!token) {
- //   alert("Access denied. Please log in first.");
-   // window.location.href = "admin_login.html"; // or wherever your login page is
- // }
-//};
+<script>
+  // Check if the user is logged in
+  window.onload = function () {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Access denied. Please log in first.");
+      window.location.href = "admin_login.html";
+    }
+  };
 
-    document.getElementById('productForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
+  document.getElementById('productForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-      const form = e.target;
-      const formData = new FormData();
+    const form = e.target;
+    const formData = new FormData();
 
-      formData.append('name', form.name.value);
-      formData.append('price', form.price.value);
-      formData.append('category_id', form.category_id.value);
-      formData.append('description', form.description.value);
-      formData.append('image', form.image.value);
-      formData.append('quantity', form.quantity.value);
+    formData.append('name', form.name.value);
+    formData.append('price', form.price.value);
+    formData.append('category_id', form.category_id.value);
+    formData.append('description', form.description.value);
+    formData.append('quantity', form.quantity.value);
 
-      // Append the file if selected
-      if (form.image.files.length > 0) {
-        formData.append('image', form.image.files[0]);
-      }
+    // ✅ Only append the actual file, not form.image.value
+    if (form.image.files.length > 0) {
+      formData.append('image', form.image.files[0]);
+    }
 
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
+    try {
       const res = await fetch('http://127.0.0.1:8000/products', {
         method: 'POST',
         headers: {
@@ -115,17 +115,24 @@
         body: formData
       });
 
-
       const msg = document.getElementById('responseMsg');
       if (res.ok) {
         msg.style.color = 'green';
         msg.innerText = '✅ Product uploaded successfully!';
         form.reset();
       } else {
+        const errorText = await res.text();
         msg.style.color = 'red';
-        msg.innerText = '❌ Upload failed.';
+        msg.innerText = `❌ Upload failed: ${errorText}`;
       }
-    });
-  </script>
+    } catch (err) {
+      console.error('Error uploading product:', err);
+      const msg = document.getElementById('responseMsg');
+      msg.style.color = 'red';
+      msg.innerText = '❌ Upload failed due to network error.';
+    }
+  });
+</script>
+
 </body>
 </html>

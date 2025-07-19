@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from typing import List
+from contextlib import asynccontextmanager
 
 # --- Local imports ---
 from database_setup import SessionLocal, create_tables
@@ -12,8 +13,14 @@ from models import Admin, Product, ProductRequest, Order
 from schemas import ProductOut
 import auth
 
+# ✅ Lifespan setup
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_tables()
+    yield
+
 # ✅ Create FastAPI app
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 # ✅ CORS Middleware
 app.add_middleware(
@@ -27,11 +34,6 @@ app.add_middleware(
 # ✅ Serve static/uploads
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-# ✅ DB startup
-@app.on_event("startup")
-def startup():
-    create_tables()
 
 # ✅ Reusable DB session
 def get_db():
@@ -128,12 +130,7 @@ def place_order(
         }
     }
 
-# ✅ Product list for old route (still OK)
-@app.get("/products", response_model=List[ProductOut])
-def list_products(db: Session = Depends(get_db)):
-    return db.query(Product).all()
-
-# ✅ Import and include routers
+# ✅ Import and include routers (this handles products and orders)
 from routes.product import router as product_router
 from routes.admin import router as admin_router
 app.include_router(product_router)

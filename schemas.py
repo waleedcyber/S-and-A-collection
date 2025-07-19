@@ -4,6 +4,13 @@ from pydantic import BaseModel
 from typing import Optional
 from typing import List
 
+
+class ProductCreate(BaseModel):
+    name: str
+    price: float
+    category_id: int  # ✅ Changed from 'category' to 'category_id'
+    description: str
+    quantity: int
 class ProductOut(BaseModel):
     id: int
     name: str
