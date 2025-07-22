@@ -1,14 +1,18 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form
+from typing import List  
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form, Query
 from sqlalchemy.orm import Session
 from utils.order_id_generator import generate_order_id
 from database_setup import get_db
 from models import Product, Order, Category
 from schemas import ProductCreate, ProductOut, OrderCreate
-
+from fastapi import Request
+from fastapi.security import OAuth2PasswordBearer
 import json
 import os
 
 router = APIRouter()
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @router.post("/products")
 def create_product(
@@ -18,7 +22,8 @@ def create_product(
     quantity: int = Form(...),
     category_id: int = Form(...),
     image: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
 ):
     # ✅ Make sure uploads folder exists
     upload_dir = "uploads"
@@ -62,9 +67,35 @@ def create_product(
         }
     }
 
-@router.get("/products")
-def get_products(db: Session = Depends(get_db)):
-    return db.query(Product).all()
+
+@router.get("/products", response_model=List[ProductOut])
+def get_products(
+    request: Request,
+    db: Session = Depends(get_db),
+    category_id: int = Query(None),
+    sort_by: str = Query(None)
+):
+    query = db.query(Product)
+
+    if category_id:
+        query = query.filter(Product.category_id == category_id)
+
+    if sort_by == "price":
+        query = query.order_by(Product.price)
+    elif sort_by == "name":
+        query = query.order_by(Product.name)
+    else:
+        query = query.order_by(Product.id.desc())
+
+    products = query.all()
+
+    # Inject full image URL for each product
+    for product in products:
+        if product.image_url and not product.image_url.startswith("http"):
+            filename = product.image_url.split("/")[-1]
+            product.image_url = f"{request.base_url}uploads/{filename}"
+
+    return products
 
 
 @router.get("/categories")

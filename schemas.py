@@ -3,6 +3,8 @@
 from pydantic import BaseModel
 from typing import Optional
 from typing import List
+from pydantic import BaseModel
+from typing import Optional
 
 
 class ProductCreate(BaseModel):
@@ -11,15 +13,18 @@ class ProductCreate(BaseModel):
     category_id: int  # ✅ Changed from 'category' to 'category_id'
     description: str
     quantity: int
+
 class ProductOut(BaseModel):
     id: int
     name: str
-    description: Optional[str] = None
+    description: Optional[str]
     price: float
     quantity: int
+    image_url: Optional[str]
+    category_id: int
 
     model_config = {
-        "from_attributes": True
+        "from_attributes": True  # ✅ Pydantic v2 way
     }
         
 

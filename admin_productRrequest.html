@@ -42,6 +42,13 @@
     th {
       background-color: #eee;
     }
+
+    .message {
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+      color: #888;
+    }
   </style>
 </head>
 <body>
@@ -51,7 +58,8 @@
   </header>
 
   <div class="content">
-    <table>
+    <div id="message" class="message">Loading requests...</div>
+    <table style="display:none;">
       <thead>
         <tr>
           <th>Product Name</th>
@@ -68,31 +76,51 @@
   <script>
     window.onload = async function () {
       const token = localStorage.getItem("token");
+      const messageDiv = document.getElementById("message");
+      const table = document.querySelector("table");
+
       if (!token) {
         alert("Access denied. Please log in first.");
         window.location.href = "admin_login.html";
         return;
       }
 
-      const res = await fetch("http://127.0.0.1:8000/admin/product-requests", {
-        headers: {
-          Authorization: `Bearer ${token}`
+      try {
+        const res = await fetch("http://127.0.0.1:8000/admin/product-requests", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error("Token invalid or expired");
         }
-      });
 
-      const data = await res.json();
-      const tbody = document.getElementById("requests-table-body");
+        const data = await res.json();
+        const tbody = document.getElementById("requests-table-body");
 
-      data.forEach(request => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${request.product_name}</td>
-          <td>${request.email}</td>
-          <td>${request.quantity}</td>
-          <td>${request.message}</td>
-        `;
-        tbody.appendChild(row);
-      });
+        if (data.length === 0) {
+          messageDiv.textContent = "No product requests found.";
+        } else {
+          messageDiv.style.display = "none";
+          table.style.display = "table";
+
+          data.forEach(request => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${request.product_name}</td>
+              <td>${request.email}</td>
+              <td>${request.quantity}</td>
+              <td>${request.message}</td>
+            `;
+            tbody.appendChild(row);
+          });
+        }
+      } catch (error) {
+        alert("Session expired or unauthorized. Please log in again.");
+        localStorage.removeItem("token");
+        window.location.href = "admin_login.html";
+      }
     };
   </script>
 </body>
