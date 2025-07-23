@@ -1,8 +1,16 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 from db import Base
+
+
+class Category(Base):
+    __tablename__ = "categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False, unique=True)
+
+    products = relationship("Product", back_populates="category")
 
 
 class Product(Base):
@@ -15,9 +23,11 @@ class Product(Base):
     stock = Column(Integer, default=0)
     image_url = Column(String)
     quantity = Column(Integer, default=0)
+    category_id = Column(Integer, ForeignKey("categories.id"))
 
-    
-    
+    category = relationship("Category", back_populates="products")
+
+
 class ProductRequest(Base):
     __tablename__ = "product_requests"
     id = Column(Integer, primary_key=True, index=True)
@@ -29,7 +39,6 @@ class ProductRequest(Base):
     product = relationship("Product")
 
 
-
 class Order(Base):
     __tablename__ = "orders"
 
@@ -39,15 +48,14 @@ class Order(Base):
     customer_email = Column(String, nullable=False)
     customer_address = Column(String, nullable=True)
 
-    item_names = Column(Text, nullable=False)  # e.g., "Soap, Shampoo"
-    items = Column(Text, nullable=False)       # JSON string of products
+    item_names = Column(Text, nullable=False)
+    items = Column(Text, nullable=False)
 
     total = Column(Float, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
     status = Column(String, default="pending")
-
-    payment_status = Column(String, default="pending")  # or use Boolean
-    payment_reference = Column(String, nullable=True)   # Paystack/Flutterwave ref
+    payment_status = Column(String, default="pending")
+    payment_reference = Column(String, nullable=True)
     paid_at = Column(DateTime, nullable=True)
 
 
@@ -56,4 +64,4 @@ class Admin(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)
-    password = Column(String, nullable=False)  # hash this in your login logic
+    password = Column(String, nullable=False)
