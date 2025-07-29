@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from db import Base
 
 
@@ -30,14 +30,15 @@ class Product(Base):
 
 class ProductRequest(Base):
     __tablename__ = "product_requests"
+
     id = Column(Integer, primary_key=True, index=True)
     product_id = Column(Integer, ForeignKey("products.id"))
     customer_name = Column(String)
-    customer_contact = Column(String)
+    customer_email = Column(String)
+    message = Column(String)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
     product = relationship("Product")
-
 
 class Order(Base):
     __tablename__ = "orders"
@@ -46,6 +47,7 @@ class Order(Base):
     order_id = Column(String, unique=True, index=True, nullable=False)
     customer_name = Column(String, nullable=False)
     customer_email = Column(String, nullable=False)
+    customer_phone = Column(String, nullable=False)
     customer_address = Column(String, nullable=True)
 
     item_names = Column(Text, nullable=False)

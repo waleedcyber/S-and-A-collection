@@ -1,4 +1,5 @@
-from database_setup import SessionLocal, create_tables  # ✅ Import create_tables
+from db import SessionLocal
+from database_setup import create_tables  # ✅ Import create_tables
 from models import Admin
 from auth import get_password_hash
 

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Orders</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="admin_orders.css" />
+</head>
+<body class="bg-gray-100 text-sm">
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold text-center mb-4">📦 All Orders</h1>
+
+    <!-- Filter Buttons -->
+    <div class="flex flex-wrap justify-center gap-2 mb-4">
+      <button onclick="fetchOrders()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">All</button>
+      <button onclick="fetchOrders('Pending')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Pending</button>
+      <button onclick="fetchOrders('Paid')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Paid</button>
+      <button onclick="fetchOrders('Delivered')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Delivered</button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="flex justify-center mb-4">
+      <input
+        type="text"
+        id="searchPhone"
+        placeholder="Search by phone"
+        oninput="fetchOrders()"
+        class="border px-3 py-2 rounded w-full max-w-xs"
+      />
+    </div>
+
+    <!-- Orders Table -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white shadow-md rounded">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-4 py-2 text-left">ID</th>
+            <th class="px-4 py-2 text-left">Customer</th>
+            <th class="px-4 py-2 text-left">Phone</th>
+            <th class="px-4 py-2 text-left">Total</th>
+            <th class="px-4 py-2 text-left">Created</th>
+            <th class="px-4 py-2 text-left">Payment</th>
+            <th class="px-4 py-2 text-left">Delivery</th>
+            <th class="px-4 py-2 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="orders-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg text-center">
+      <p class="mb-4">Are you sure you want to delete this order?</p>
+      <div class="flex justify-center gap-4">
+        <button onclick="deleteOrder()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Yes, delete</button>
+        <button onclick="closeModal()" class="border px-4 py-2 rounded">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let selectedOrderId = null;
+
+    function timeAgo(dateString) {
+      const now = new Date();
+      const past = new Date(dateString);
+      const seconds = Math.floor((now - past) / 1000);
+      if (seconds < 60) return 'Just now';
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes} min${minutes !== 1 ? 's' : ''} ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+      const days = Math.floor(hours / 24);
+      if (days < 7) return `${days} day${days !== 1 ? 's' : ''} ago`;
+      const weeks = Math.floor(days / 7);
+      if (weeks < 4) return `${weeks} week${weeks !== 1 ? 's' : ''} ago`;
+      const months = Math.floor(days / 30);
+      if (months < 12) return `${months} month${months !== 1 ? 's' : ''} ago`;
+      const years = Math.floor(days / 365);
+      return `${years} year${years !== 1 ? 's' : ''} ago`;
+    }
+
+    async function fetchOrders(status = "") {
+      const phone = document.getElementById('searchPhone').value.trim();
+      let url = "/orders";
+      if (status) url += `?status=${status}`;
+      const res = await fetch(url);
+      const orders = await res.json();
+
+      const tbody = document.getElementById("orders-table");
+      tbody.innerHTML = "";
+
+      orders
+        .filter(order => order.customer_phone.includes(phone))
+        .forEach(order => {
+          const tr = document.createElement("tr");
+          tr.classList.add("border-b");
+          tr.innerHTML = `
+            <td class="px-4 py-2">${order.order_id}</td>
+            <td class="px-4 py-2">${order.customer_name}</td>
+            <td class="px-4 py-2">${order.customer_phone}</td>
+            <td class="px-4 py-2 font-semibold">₦${order.total}</td>
+            <td class="px-4 py-2 text-gray-500 text-xs">${timeAgo(order.timestamp)}</td>
+            <td class="px-4 py-2 font-semibold ${order.payment_status === 'Paid' ? 'text-green-600' : 'text-orange-500'}">${order.payment_status}</td>
+            <td class="px-4 py-2 font-semibold ${order.status === 'Delivered' ? 'text-teal-600' : 'text-red-500'}">${order.status}</td>
+            <td class="px-4 py-2 space-y-1">
+              ${order.payment_status !== "Paid" ? `<button onclick="markPaid(${order.id})" class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 text-xs w-full">Mark Paid</button>` : ""}
+              ${order.status !== "Delivered" ? `<button onclick="markDelivered(${order.id})" class="bg-teal-500 text-white px-2 py-1 rounded hover:bg-teal-600 text-xs w-full">Mark Delivered</button>` : ""}
+              <button onclick="confirmDelete(${order.id})" class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 text-xs w-full">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+    }
+
+    async function markPaid(id) {
+      const res = await fetch(`/orders/${id}/mark-paid`, { method: "POST" });
+      if (res.ok) fetchOrders();
+    }
+
+    async function markDelivered(id) {
+      const res = await fetch(`/orders/${id}/mark-delivered`, { method: "POST" });
+      if (res.ok) fetchOrders();
+    }
+
+    function confirmDelete(id) {
+      selectedOrderId = id;
+      document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      selectedOrderId = null;
+      document.getElementById('deleteModal').classList.add('hidden');
+    }
+
+    function deleteOrder() {
+      fetch(`/orders/${selectedOrderId}`, { method: 'DELETE' })
+        .then(res => {
+          if (res.ok) fetchOrders();
+          closeModal();
+        });
+    }
+
+    fetchOrders();
+  </script>
+</body>
+</html>

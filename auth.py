@@ -35,7 +35,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from database_setup import get_db
+from db import get_db
 from models import Admin  # import your Admin model
 
 def get_current_admin(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):

@@ -7,11 +7,18 @@ from sqlalchemy.orm import Session
 from typing import List
 from contextlib import asynccontextmanager
 
+from starlette.middleware.cors import CORSMiddleware
+
 # --- Local imports ---
-from database_setup import SessionLocal, create_tables
+from db import SessionLocal
+from database_setup import create_tables
+
 from models import Admin, Product, ProductRequest, Order
 from schemas import ProductOut
 import auth
+
+
+
 
 # ✅ Lifespan setup
 @asynccontextmanager
@@ -25,15 +32,14 @@ app = FastAPI(lifespan=lifespan)
 # ✅ CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    origins=[
-        "https://sandscollection.com",
-        "http://localhost:5500",
-        "http://127.0.0.1:5500"
-    ],
+    allow_origins=['*'],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from routes.product_request import router as product_request_router
+app.include_router(product_request_router)
 
 # ✅ Serve static/uploads
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -83,6 +89,33 @@ def login_admin(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
 @app.get("/admin/product-requests")
 def get_product_requests(db: Session = Depends(get_db), current_admin: str = Depends(get_current_admin)):
     return db.query(ProductRequest).all()
+
+from fastapi import FastAPI, Depends, Query
+from sqlalchemy.orm import Session
+from typing import List
+from db import get_db
+from schemas import ProductOut
+from models import Product
+
+@app.get("/products", response_model=List[ProductOut])
+def get_products(
+    sort_by: str = Query("default"),  # 👈 Add this
+    db: Session = Depends(get_db)
+):
+    query = db.query(Product)
+
+    if sort_by == "newest":
+        query = query.order_by(Product.id.desc())  # newest product first
+    elif sort_by == "oldest":
+        query = query.order_by(Product.id.asc())  # oldest product first
+    elif sort_by == "price-low":
+        query = query.order_by(Product.price.asc())
+    elif sort_by == "price-high":
+        query = query.order_by(Product.price.desc())
+
+    return query.all()
+
+
 
 # ✅ Route to request product (user side)
 @app.post("/request-product")
