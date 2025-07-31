@@ -4,7 +4,7 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 
 # 🔐 Secret key (change to something strong and random in production)
-SECRET_KEY = "yoursecretkey"  # 🔁 CHANGE this for production (e.g., use secrets.token_urlsafe())
+SECRET_KEY = "@antysaa$bywaleed*s8Scollection!xWqPnZr"  # 🔁 CHANGE this for production (e.g., use secrets.token_urlsafe())
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
