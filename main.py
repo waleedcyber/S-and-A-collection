@@ -51,7 +51,8 @@ from routes.product_request import router as product_request_router
 app.include_router(product_request_router)
 
 # ✅ Serve static/uploads
-app.mount("/static", StaticFiles(directory="static"), name="static")
+#app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/", StaticFiles(directory=".", html=True), name="root_static")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # ✅ Reusable DB session
@@ -181,3 +182,18 @@ from routes.product import router as product_router
 from routes.admin import router as admin_router
 app.include_router(product_router)
 app.include_router(admin_router)
+
+
+from fastapi.responses import FileResponse
+
+@app.get("/")
+def serve_index():
+    return FileResponse("index.html")
+
+@app.get("/admin_login-page")
+def serve_admin():
+    return FileResponse("admin_login.html")
+
+@app.get("/cart")
+def serve_cart():
+    return FileResponse("cart.html")
