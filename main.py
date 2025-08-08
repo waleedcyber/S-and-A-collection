@@ -17,6 +17,8 @@ from models import Admin, Product, ProductRequest, Order
 from schemas import ProductOut
 import auth
 
+from routes.product_request import router as product_request_router
+
 from dotenv import load_dotenv
 import os
 
@@ -47,7 +49,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from routes.product_request import router as product_request_router
+
 app.include_router(product_request_router)
 
 # ✅ Serve static/uploads

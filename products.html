@@ -452,7 +452,7 @@ select {
       const category = categorySelect.value;
       const sort = sortSelect.value;
 
-      let url = `http://127.0.0.1:8000/products?`;
+      let url = `/products?`;
       if (category) url += `category_id=${category}&`;
       if (sort) url += `sort_by=${sort}`;
 
@@ -523,7 +523,7 @@ select {
     };
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/request-product", {
+      const res = await fetch("/request-product", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

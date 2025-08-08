@@ -69,7 +69,7 @@
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
 
-      const res = await fetch("http://127.0.0.1:8000/admin/login", {
+      const res = await fetch("/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded"

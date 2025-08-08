@@ -99,3 +99,23 @@ def mark_order_delivered(order_id: int, db: Session = Depends(get_db)):
 def get_all_product_requests(db: Session = Depends(get_db)):
     requests = db.query(ProductRequest).all()
     return requests
+
+    @router.delete("/admin/products/{product_id}", status_code=204)
+def delete_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+    admin: dict = Depends(get_current_admin)
+):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    # Optional: Delete the image file from the server
+    if product.image_url:
+        file_path = product.image_url.lstrip("/") # remove leading slash
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+    db.delete(product)
+    db.commit()
+    return {"message": "Product deleted successfully"} 
