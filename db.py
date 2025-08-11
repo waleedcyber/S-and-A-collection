@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base  # ✅ updated import for SQLAlchemy 2.0
 from sqlalchemy.orm import sessionmaker, Session
 from dotenv import load_dotenv
-from config import DATABASE_UR
+from config import DATABASE_URL
 # Change this to your actual DB path if different
 import os
 
