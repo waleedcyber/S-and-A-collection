@@ -100,7 +100,7 @@ def get_all_product_requests(db: Session = Depends(get_db)):
     requests = db.query(ProductRequest).all()
     return requests
 
-    @router.delete("/admin/products/{product_id}", status_code=204)
+@router.delete("/admin/products/{product_id}", status_code=204)
 def delete_product(
     product_id: int,
     db: Session = Depends(get_db),
