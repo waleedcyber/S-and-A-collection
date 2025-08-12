@@ -127,3 +127,4 @@ def request_product(data: ProductRequestSchema, db: Session = Depends(get_db)):
     db.refresh(request_entry)
     return {"message": "Request submitted successfully"}
 
+ 

@@ -3,20 +3,24 @@ from sqlalchemy.orm import Session
 from db import get_db
 from models import Product
 from models import Order
+from models import Category
+from schemas import ProductRequestResponseSchema
+from schemas import CategoryCreate
+from models import ProductRequest
+import auth
+from auth import get_current_admin  # Protect admin routes
 from uuid import uuid4
 import os
 import shutil
 from datetime import datetime
 from typing import List 
-from schemas import ProductRequestResponseSchema
-from models import ProductRequest
-from auth import get_current_admin  # Protect admin routes
 
 
 router = APIRouter()
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 
 @router.post("/admin/upload")
 def upload_product(
@@ -118,4 +122,56 @@ def delete_product(
 
     db.delete(product)
     db.commit()
-    return {"message": "Product deleted successfully"} 
+    return {"message": "Product deleted successfully"}
+
+@router.post("/admin/categories", status_code=201)
+def create_category(
+    category: CategoryCreate,
+    db: Session = Depends(get_db),
+    admin: dict = Depends(get_current_admin)
+):
+    # Check if category already exists
+    existing = db.query(Category).filter(Category.name == category.name).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Category already exists")
+    new_category = Category(name=category.name)
+    db.add(new_category)
+    db.commit()
+    db.refresh(new_category)
+    return {"message": "Category created", "category": {"id": new_category.id, "name": new_category.name}}
+
+@router.get("/admin/categories")
+def list_categories(
+    db: Session = Depends(get_db),
+    admin: dict = Depends(get_current_admin)
+):
+    categories = db.query(Category).all()
+    return [{"id": c.id, "name": c.name} for c in categories]
+
+@router.put("/admin/categories/{category_id}")
+def update_category(
+    category_id: int, 
+    category: CategoryCreate, 
+    db: Session = Depends(get_db), 
+    admin: dict = Depends(get_current_admin)
+):
+    cat = db.query(Category).filter(Category.id == category_id).first()
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    cat.name = category.name
+    db.commit()
+    db.refresh(cat)
+    return {"id": cat.id, "name": cat.name}
+
+@router.delete("/admin/categories/{category_id}")
+def delete_category(
+    category_id: int, 
+    db: Session = Depends(get_db), 
+    admin: dict = Depends(get_current_admin)
+):
+    cat = db.query(Category).filter(Category.id == category_id).first()
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    db.delete(cat)
+    db.commit()
+    return {"detail": "Category deleted"}

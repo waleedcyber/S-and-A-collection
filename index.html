@@ -10,7 +10,6 @@
       font-family: Arial, sans-serif;
       background-color: #f8f8f8;
     }
-
     header {
       background-color: #ff6b6b;
       color: white;
@@ -22,17 +21,24 @@
     }
    .navigate{
     display: flex;
-    flex-direction: row; 
+    flex-direction: row;
     align-items: center;
     justify-content: space-around;
-
-  }
-
+   }
+   .navigate a {
+     color: white;
+     text-decoration: none;
+     padding: 5px 10px;
+     border-radius: 5px;
+     transition: background-color 0.3s;
+   }
+   .navigate a:hover {
+     background-color: #ff4040;
+   }
     .browse-all {
       text-align: center;
       margin: 20px 0;
     }
-
     .browse-all a {
       background-color: white;
       color: #ff6b6b;
@@ -43,29 +49,17 @@
       font-weight: bold;
       transition: 0.3s ease;
     }
-
     .browse-all a:hover {
       background-color: #ff6b6b;
       color: white;
     }
-
-    .filters {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin: 20px auto;
-      flex-wrap: wrap;
-      max-width: 1200px;
+    .showcase-title {
+      text-align: center;
+      font-size: 2em;
+      color: #333;
+      margin-top: 40px;
+      margin-bottom: 20px;
     }
-
-    select, input[type="text"] {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
-      width: 200px;
-    }
-
     .showcase {
       padding: 20px;
       display: grid;
@@ -74,7 +68,6 @@
       max-width: 1200px;
       margin: auto;
     }
-
     .card {
       background: white;
       border-radius: 15px;
@@ -82,62 +75,46 @@
       overflow: hidden;
       transition: transform 0.3s ease;
       animation: fadeInUp 0.6s ease;
+      display: flex;
+      flex-direction: column;
     }
-
     .card:hover {
       transform: scale(1.03);
     }
-
     .card img {
       width: 100%;
       height: 180px;
       object-fit: cover;
     }
-
     .card-content {
       padding: 20px;
+      flex-grow: 1; /* Makes content fill available space */
+      display: flex;
+      flex-direction: column;
     }
-
     .card-content h3 {
-      margin: 0;
+      margin: 0 0 10px 0;
       font-size: 20px;
     }
-
     .card-content p {
       font-size: 14px;
       color: #555;
+      flex-grow: 1; /* Pushes the button to the bottom */
     }
-
     .card-content a {
       display: inline-block;
-      margin-top: 10px;
+      margin-top: 15px;
       background-color: #ff6b6b;
       color: white;
       padding: 10px 15px;
       border-radius: 8px;
       text-decoration: none;
+      text-align: center;
       transition: background-color 0.2s ease;
     }
-
     .card-content a:hover {
       background-color: #ff4040;
     }
-
-    .random-products {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .random-products img {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      border-radius: 6px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
     @keyframes fadeInUp {
       from {
         opacity: 0;
@@ -155,9 +132,9 @@
     <h1>Welcome to S&S collection</h1>
     <p>Explore our most popular and trending products</p>
     <div class="navigate">
-      <div>Home</div>
-      <div>About us</div>
-      <div>Contact</div>
+      <a href="/">Home</a>
+      <a href="/about.html">About us</a>
+      <a href="/contact.html">Contact</a>
     </div>
   </header>
 
@@ -165,88 +142,67 @@
     <a href="products.html">Browse All Products 🛍️</a>
   </div>
 
-  <div class="filters">
-    <select id="categoryFilter">
-      <option value="all">All Categories</option>
-      <option value="1">Fashion</option>
-      <option value="2">Electronics</option>
-      <option value="3">Beauty</option>
-  
-    </select>
-    <input type="text" id="searchInput" placeholder="Search products...">
-  </div>
+  <h2 class="showcase-title">Featured Products</h2>
 
-  <section class="showcase" id="showcase">
-    <div class="card" data-category="fashion">
-      <img src="https://via.placeholder.com/300x180?text=Fashion" alt="Fashion">
-      <div class="card-content">
-        <h3>Fashion & Clothing</h3>
-        <p>Trendy outfits and styles for all ages.</p>
-        <a href="products.html?category=1">Shop Fashion</a>
-        <div class="random-products">
-          <img src="https://via.placeholder.com/60?text=Shoes" alt="Shoes">
-          <img src="https://via.placeholder.com/60?text=Dress" alt="Dress">
-          <img src="https://via.placeholder.com/60?text=Bag" alt="Bag">
-          <img src="https://via.placeholder.com/60?text=Hat" alt="Hat">
-          <img src="https://via.placeholder.com/60?text=Jeans" alt="Jeans">
-          <img src="https://via.placeholder.com/60?text=Jacket" alt="Jacket">
-        </div>
-      </div>
-    </div>
-
-    <div class="card" data-category="electronics">
-      <img src="https://via.placeholder.com/300x180?text=Electronics" alt="Electronics">
-      <div class="card-content">
-        <h3>Electronics</h3>
-        <p>Gadgets, kitchen appliances, accessories, and more.</p>
-        <a href="products.html?category=2">Browse Electronics</a>
-        <div class="random-products">
-          <img src="https://via.placeholder.com/60?text=Phone" alt="Phone">
-          <img src="https://via.placeholder.com/60?text=Blender" alt="Blender">
-          <img src="https://via.placeholder.com/60?text=Watch" alt="Watch">
-          <img src="https://via.placeholder.com/60?text=Iron" alt="Iron">
-          <img src="https://via.placeholder.com/60?text=Fan" alt="Fan">
-          <img src="https://via.placeholder.com/60?text=TV" alt="TV">
-        </div>
-      </div>
-    </div>
-
-    <div class="card" data-category="beauty">
-      <img src="https://via.placeholder.com/300x180?text=Beauty" alt="Beauty">
-      <div class="card-content">
-        <h3>Beauty & Care</h3>
-        <p>Skincare, makeup, and self-care essentials.</p>
-        <a href="products.html?category=3">See Beauty Products</a>
-        <div class="random-products">
-          <img src="https://via.placeholder.com/60?text=Soap" alt="Soap">
-          <img src="https://via.placeholder.com/60?text=Lotion" alt="Lotion">
-          <img src="https://via.placeholder.com/60?text=Powder" alt="Powder">
-          <img src="https://via.placeholder.com/60?text=Brush" alt="Brush">
-          <img src="https://via.placeholder.com/60?text=Perfume" alt="Perfume">
-          <img src="https://via.placeholder.com/60?text=Nail" alt="Nail Polish">
-        </div>
-      </div>
-    </div>
+  <!-- This section will be filled with products from our database -->
+  <section class="showcase" id="productShowcase">
+    <!-- Products will be loaded here by JavaScript -->
   </section>
 
   <script>
-    const filter = document.getElementById('categoryFilter');
-    const search = document.getElementById('searchInput');
-    const cards = document.querySelectorAll('.card');
+    // This function runs when the page has finished loading
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchRandomProducts();
+    });
 
-    function filterCards() {
-      const selected = filter.value.toLowerCase();
-      const term = search.value.toLowerCase();
+    // This function fetches data from our new backend route
+    function fetchRandomProducts() {
+      // The URL must match the route we created in the backend
+      const apiUrl = '/api/products/random';
+      const showcase = document.getElementById('productShowcase');
 
-      cards.forEach(card => {
-        const matchCategory = selected === 'all' || card.dataset.category === selected;
-        const matchSearch = card.innerText.toLowerCase().includes(term);
-        card.style.display = matchCategory && matchSearch ? 'block' : 'none';
-      });
+      fetch(apiUrl)
+        .then(response => {
+          // Check if the request was successful
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json(); // Convert the response to JSON
+        })
+        .then(products => {
+          // Clear any existing content
+          showcase.innerHTML = ''; 
+          
+          // If no products are found, show a message
+          if (products.length === 0) {
+            showcase.innerHTML = '<p>No products to display at the moment. Please check back later!</p>';
+            return;
+          }
+
+          // Loop through each product and create a card for it
+          products.forEach(product => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            // NOTE: You'll need to use your actual product properties here.
+            // I am assuming your product has: name, description, image_url, and id
+            card.innerHTML = `
+              <img src="${product.image_url || 'https://via.placeholder.com/300x180?text=No+Image'}" alt="${product.name}">
+              <div class="card-content">
+                <h3>${product.name}</h3>
+                <p>${product.description}</p>
+                <a href="/product.html?id=${product.id}">View Details</a>
+              </div>
+            `;
+            showcase.appendChild(card);
+          });
+        })
+        .catch(error => {
+          // If there's an error (e.g., backend is down), display a message
+          console.error('There was a problem fetching products:', error);
+          showcase.innerHTML = '<p>Sorry, we could not load products at this time.</p>';
+        });
     }
-
-    filter.addEventListener('change', filterCards);
-    search.addEventListener('input', filterCards);
   </script>
 </body>
 </html>

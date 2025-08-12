@@ -63,11 +63,8 @@
     <form id="productForm">
       <input type="text" name="name" placeholder="Product Name" required>
       <input type="number" name="price" placeholder="Price (₦)" required>
-      <select name="category_id" required>
+      <select name="category_id" id="categorySelect" required>
         <option value="">-- Select Category --</option>
-        <option value="1">Fashion</option>
-        <option value="2">Electronics</option>
-        <option value="3">Beauty</option>
       </select>
       <textarea name="description" rows="4" placeholder="Product Description"></textarea>
       <input type="file" name="image" accept="image/*" required />
@@ -79,11 +76,35 @@
 
 <script>
   // Check if the user is logged in
-  window.onload = function () {
+  window.onload = async function () {
     const token = localStorage.getItem("token");
     if (!token) {
       alert("Access denied. Please log in first.");
       window.location.href = "admin_login.html";
+      return;
+    }
+
+    // Fetch categories dynamically
+    try {
+      const res = await fetch('http://127.0.0.1:8000/admin/categories', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const categories = await res.json();
+        const select = document.getElementById('categorySelect');
+        categories.forEach(cat => {
+          const opt = document.createElement('option');
+          opt.value = cat.id;
+          opt.textContent = cat.name;
+          select.appendChild(opt);
+        });
+      } else {
+        alert("Failed to load categories.");
+      }
+    } catch (err) {
+      alert("Network error loading categories.");
     }
   };
 
@@ -99,7 +120,6 @@
     formData.append('description', form.description.value);
     formData.append('quantity', form.quantity.value);
 
-    // ✅ Only append the actual file, not form.image.value
     if (form.image.files.length > 0) {
       formData.append('image', form.image.files[0]);
     }
@@ -107,7 +127,7 @@
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/products', {
+      const res = await fetch('http://127.0.0.1:8000/admin/upload', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`

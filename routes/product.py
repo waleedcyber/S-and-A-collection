@@ -1,17 +1,14 @@
-from typing import List  
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form, Query
+from typing import List
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form, Query, Request
 from sqlalchemy.orm import Session
-from utils.order_id_generator import generate_order_id
 from db import get_db
-from models import Product, Order, Category
-from schemas import ProductCreate, ProductOut, OrderCreate
-from fastapi import Request
+from models import Product, Category
+from schemas import ProductCreate, ProductOut
 from fastapi.security import OAuth2PasswordBearer
-import json
 import os
+import random
 
 router = APIRouter()
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @router.post("/products")
@@ -68,6 +65,19 @@ def create_product(
     }
 
 
+@router.get("/api/products/random", response_model=List[ProductOut])
+def get_random_products(db: Session = Depends(get_db)):
+    """
+    This endpoint fetches all products from the database,
+    and returns a random sample of up to 6 products.
+    """
+    all_products = db.query(Product).all()
+    sample_size = min(6, len(all_products))
+    random_products = random.sample(all_products, sample_size)
+    
+    return random_products
+
+
 @router.get("/products", response_model=List[ProductOut])
 def get_products(
     request: Request,
@@ -101,5 +111,3 @@ def get_products(
 @router.get("/categories")
 def get_categories(db: Session = Depends(get_db)):
     return db.query(Category).all()
-
-
