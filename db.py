@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from dotenv import load_dotenv
 from config import DATABASE_URL
 # Change this to your actual DB path if different
-from .db import get_db
+from db import get_db
 from . import models, schemas
 
 import os
