@@ -377,6 +377,8 @@ select {
 
 
   <script>
+    const apiUrl = '/api/products/random';
+
     const categorySelect = document.getElementById('category');
     const sortSelect = document.getElementById('sort');
     const productGrid = document.getElementById('productGrid');
@@ -449,7 +451,7 @@ select {
       const category = categorySelect.value;
       const sort = sortSelect.value;
 
-      let url = `/products?`;
+      let url = `/api/products?`;
       if (category) url += `category_id=${category}&`;
       if (sort) url += `sort_by=${sort}`;
 
@@ -520,7 +522,7 @@ select {
     };
 
     try {
-      const res = await fetch("/request-product", {
+      const res = await fetch("/api/request-product", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -562,6 +564,25 @@ select {
 
     categorySelect.addEventListener('change', fetchProducts);
     sortSelect.addEventListener('change', fetchProducts);
+
+    async function loadCategories() {
+  try {
+    const res = await fetch('/api/categories');
+    if (res.ok) {
+      const categories = await res.json();
+      categorySelect.innerHTML = '<option value="">All Categories</option>';
+      categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.id;
+        opt.textContent = cat.name;
+        categorySelect.appendChild(opt);
+      });
+    }
+  } catch (err) {
+    // Optionally handle error
+  }
+}
+loadCategories();
 
     fetchProducts();
     updateCartCount();

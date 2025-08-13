@@ -42,7 +42,7 @@
     }
 
     async function fetchCategories() {
-      const res = await fetch("http://127.0.0.1:8000/admin/categories", {
+      const res = await fetch("/api/admin/categories", {
         headers: { Authorization: `Bearer ${token}` }
       });
       const list = document.getElementById("categoryList");
@@ -141,7 +141,7 @@
     async function updateCategory(id, name) {
       const msg = document.getElementById("msg");
       msg.textContent = "";
-      const res = await fetch(`http://127.0.0.1:8000/admin/categories/${id}`, {
+      const res = await fetch(`/api/admin/categories/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
