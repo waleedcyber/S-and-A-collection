@@ -10,14 +10,12 @@
       font-family: Arial, sans-serif;
       background-color: #f0f2f5;
     }
-
     header {
       background-color: #333;
       color: white;
       padding: 20px;
       text-align: center;
     }
-
     .form-container {
       max-width: 400px;
       margin: 60px auto;
@@ -26,7 +24,6 @@
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
-
     input, button {
       width: 100%;
       padding: 12px;
@@ -35,15 +32,26 @@
       border: 1px solid #ccc;
       font-size: 16px;
     }
-
     button {
       background-color: #007bff;
       color: white;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #0056b3;
+    }
+    .password-wrapper {
+      position: relative;
+    }
+    .toggle-password {
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 14px;
+      color: #666;
+      user-select: none;
     }
   </style>
 </head>
@@ -57,12 +65,22 @@
     <h2>Admin Login</h2>
     <form onsubmit="loginAdmin(event)">
       <input type="text" id="username" placeholder="Username" required />
-      <input type="password" id="password" placeholder="Password" required />
+      
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Password" required />
+        <span class="toggle-password" onclick="togglePassword()">👁</span>
+      </div>
+      
       <button type="submit">Login</button>
     </form>
   </div>
 
   <script>
+    function togglePassword() {
+      const passwordField = document.getElementById('password');
+      passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+    }
+
     async function loginAdmin(event) {
       event.preventDefault();
 
@@ -84,7 +102,7 @@
         alert("Login successful!");
         window.location.href = "admin_home.html";
       } else {
-        alert("Login failed: " + data.detail);
+        alert("Login failed: " + (data.detail || "Unknown error"));
       }
     }
   </script>
