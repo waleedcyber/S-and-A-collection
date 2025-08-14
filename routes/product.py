@@ -65,7 +65,7 @@ def create_product(
     }
 
 
-@router.get("/api/products/random", response_model=List[ProductOut])
+@router.get("/products/random")
 def get_random_products(db: Session = Depends(get_db)):
     """
     This endpoint fetches all products from the database,
@@ -111,3 +111,19 @@ def get_products(
 @router.get("/categories")
 def get_categories(db: Session = Depends(get_db)):
     return db.query(Category).all()
+
+@router.post("/admin/login")
+def admin_login(
+    username: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Admin login endpoint.
+    """
+    # For now, let's just print the credentials to the console
+    # In real scenario, you'd want to verify these credentials
+    # and probably return a token or some sort of admin session
+    print(f"Admin Login Attempt: {username=} {password=}")
+
+    return {"message": "Admin login successful"}

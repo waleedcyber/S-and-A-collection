@@ -175,3 +175,18 @@ def delete_category(
     db.delete(cat)
     db.commit()
     return {"detail": "Category deleted"}
+
+@router.get("/products/random")
+def get_random_products(db: Session = Depends(get_db)):
+    products = db.query(Product).all()
+    return [
+        {
+            "id": product.id,
+            "name": product.name,
+            "price": product.price,
+            "quantity": product.quantity,
+            "description": product.description,
+            "image_url": product.image_url
+        }
+        for product in products
+    ]
