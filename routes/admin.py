@@ -1,9 +1,12 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db import get_db
+from fastapi.security import OAuth2PasswordRequestForm
 from models import Product, Order, Category, ProductRequest
 from schemas import ProductRequestResponseSchema, CategoryCreate
+from models import Admin
 from auth import get_current_admin
+from auth import verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from uuid import uuid4
 import os
 from datetime import datetime
@@ -14,6 +17,26 @@ router = APIRouter()
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+@router.post("/admin/login")
+def admin_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    # 1. Find admin in DB
+    admin = db.query(Admin).filter(Admin.username == form_data.username).first()
+    if not admin:
+        raise HTTPException(status_code=400, detail="Invalid username or password")
+
+    # 2. Verify password
+    if not verify_password(form_data.password, admin.hashed_password):
+        raise HTTPException(status_code=400, detail="Invalid username or password")
+
+    # 3. Create JWT token
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": admin.username}, expires_delta=access_token_expires
+    )
+
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @router.post("/admin/upload", tags=["Admin"])
