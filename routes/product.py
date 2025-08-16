@@ -4,12 +4,13 @@ from sqlalchemy.orm import Session
 from db import get_db
 from models import Product, Category
 from schemas import ProductCreate, ProductOut
-from fastapi.security import OAuth2PasswordBearer
 import os
 import random
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/products")
 def create_product(
@@ -19,32 +20,26 @@ def create_product(
     quantity: int = Form(...),
     category_id: int = Form(...),
     image: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme)
+    db: Session = Depends(get_db)
 ):
-    # ✅ Make sure uploads folder exists
-    upload_dir = "uploads"
-    if not os.path.exists(upload_dir):
-        os.makedirs(upload_dir)
-
-    # ✅ Save the image
-    file_path = os.path.join(upload_dir, image.filename)
+    # Save the image
+    file_path = os.path.join(UPLOAD_DIR, image.filename)
     with open(file_path, "wb") as f:
         f.write(image.file.read())
 
-    # ✅ Check if the category exists
+    # Check if the category exists
     category_obj = db.query(Category).filter_by(id=category_id).first()
     if not category_obj:
         raise HTTPException(status_code=400, detail="Invalid category ID")
 
-    # ✅ Save product with proper image URL path
+    # Save product with proper image URL path
     new_product = Product(
         name=name,
         price=price,
         description=description,
         quantity=quantity,
         category_id=category_id,
-        image_url=f"/uploads/{image.filename}"  # 🔥 This makes it usable from frontend
+        image_url=f"/uploads/{image.filename}"
     )
 
     db.add(new_product)
@@ -63,20 +58,6 @@ def create_product(
             "image_url": new_product.image_url,
         }
     }
-
-
-@router.get("/products/random")
-def get_random_products(db: Session = Depends(get_db)):
-    """
-    This endpoint fetches all products from the database,
-    and returns a random sample of up to 6 products.
-    """
-    all_products = db.query(Product).all()
-    sample_size = min(6, len(all_products))
-    random_products = random.sample(all_products, sample_size)
-    
-    return random_products
-
 
 @router.get("/products", response_model=List[ProductOut])
 def get_products(
@@ -107,23 +88,13 @@ def get_products(
 
     return products
 
+@router.get("/products/random", response_model=List[ProductOut])
+def get_random_products(db: Session = Depends(get_db)):
+    all_products = db.query(Product).all()
+    sample_size = min(6, len(all_products))
+    random_products = random.sample(all_products, sample_size) if all_products else []
+    return random_products
 
 @router.get("/categories")
 def get_categories(db: Session = Depends(get_db)):
     return db.query(Category).all()
-
-@router.post("/admin/login")
-def admin_login(
-    username: str = Form(...),
-    password: str = Form(...),
-    db: Session = Depends(get_db)
-):
-    """
-    Admin login endpoint.
-    """
-    # For now, let's just print the credentials to the console
-    # In real scenario, you'd want to verify these credentials
-    # and probably return a token or some sort of admin session
-    print(f"Admin Login Attempt: {username=} {password=}")
-
-    return {"message": "Admin login successful"}

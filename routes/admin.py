@@ -1,20 +1,14 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db import get_db
-from models import Product
-from models import Order
-from models import Category
-from schemas import ProductRequestResponseSchema
-from schemas import CategoryCreate
-from models import ProductRequest
-import auth
-from auth import get_current_admin  # Protect admin routes
+from models import Product, Order, Category, ProductRequest
+from schemas import ProductRequestResponseSchema, CategoryCreate
+from auth import get_current_admin
 from uuid import uuid4
 import os
-import shutil
 from datetime import datetime
-from typing import List 
-
+from typing import List
+import shutil
 
 router = APIRouter()
 
@@ -22,7 +16,7 @@ UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
-@router.post("/admin/upload")
+@router.post("/admin/upload", tags=["Admin"])
 def upload_product(
     name: str = Form(...),
     description: str = Form(...),
@@ -31,8 +25,13 @@ def upload_product(
     category_id: int = Form(...),
     image: UploadFile = File(...),
     db: Session = Depends(get_db),
-    admin: dict = Depends(get_current_admin)  # Protect the route
+    admin: dict = Depends(get_current_admin),
 ):
+    """
+    Upload a new product.
+
+    This endpoint is protected and can only be accessed by an admin.
+    """
     file_ext = os.path.splitext(image.filename)[1]
     if file_ext.lower() not in [".jpg", ".jpeg", ".png", ".webp"]:
         raise HTTPException(status_code=400, detail="Invalid image format")
@@ -40,8 +39,8 @@ def upload_product(
     unique_filename = f"{uuid4().hex}{file_ext}"
     file_path = os.path.join(UPLOAD_DIR, unique_filename)
 
-    with open(file_path, "wb") as f:
-        f.write(image.file.read())
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(image.file, buffer)
 
     image_url = f"/uploads/{unique_filename}"
 
@@ -51,7 +50,7 @@ def upload_product(
         price=price,
         quantity=quantity,
         category_id=category_id,
-        image_url=image_url
+        image_url=image_url,
     )
     db.add(product)
     db.commit()
@@ -59,64 +58,38 @@ def upload_product(
 
     return {"message": "Product uploaded successfully", "product": product}
 
-@router.get("/admin/products")
-def get_all_products(db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)):
+
+@router.get("/admin/products", tags=["Admin"])
+def get_all_products(
+    db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)
+):
+    """
+    Get all products.
+
+    This endpoint is protected and can only be accessed by an admin.
+    """
     products = db.query(Product).all()
-
-    return [
-        {
-            "id": product.id,
-            "name": product.name,
-            "price": product.price,
-            "quantity": product.quantity,
-            "description": product.description,
-            "image_url": product.image_url
-        }
-        for product in products
-    ]
-
-# admin marking delivery as completed
-@router.put("/orders/{order_id}/mark_paid")
-def mark_order_paid(order_id: int, db: Session = Depends(get_db)):
-    order = db.query(Order).get(order_id)
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
-    order.payment_status = "Paid"
-    order.paid = True
-    order.paid_at = datetime.utcnow()
-    db.commit()
-    return {"message": "Marked as paid"}
-
-@router.put("/orders/{order_id}/mark_delivered")
-def mark_order_delivered(order_id: int, db: Session = Depends(get_db)):
-    order = db.query(Order).get(order_id)
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
-    order.status = "Delivered"
-    db.commit()
-    return {"message": "Marked as delivered"}
+    return products
 
 
-@router.get("/product-requests", response_model=list[ProductRequestResponseSchema])
-def get_all_product_requests(db: Session = Depends(get_db)):
-    requests = db.query(ProductRequest).all()
-    return requests
-
-@router.delete("/admin/products/{product_id}", status_code=204)
+@router.delete("/admin/products/{product_id}", status_code=204, tags=["Admin"])
 def delete_product(
     product_id: int,
     db: Session = Depends(get_db),
-    admin: dict = Depends(get_current_admin)
+    admin: dict = Depends(get_current_admin),
 ):
+    """
+    Delete a product by its ID.
+
+    This endpoint is protected and can only be accessed by an admin.
+    """
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    # Optional: Delete the image file from the server
+    # Delete the image file from the server
     if product.image_url:
-        file_path = product.image_url.lstrip("/") # remove leading slash
+        file_path = product.image_url.lstrip("/")  # Remove leading slash
         if os.path.exists(file_path):
             os.remove(file_path)
 
@@ -124,13 +97,18 @@ def delete_product(
     db.commit()
     return {"message": "Product deleted successfully"}
 
-@router.post("/admin/categories", status_code=201)
+
+@router.post("/admin/categories", status_code=201, tags=["Admin"])
 def create_category(
     category: CategoryCreate,
     db: Session = Depends(get_db),
-    admin: dict = Depends(get_current_admin)
+    admin: dict = Depends(get_current_admin),
 ):
-    # Check if category already exists
+    """
+    Create a new category.
+
+    This endpoint is protected and can only be accessed by an admin.
+    """
     existing = db.query(Category).filter(Category.name == category.name).first()
     if existing:
         raise HTTPException(status_code=400, detail="Category already exists")
@@ -138,23 +116,37 @@ def create_category(
     db.add(new_category)
     db.commit()
     db.refresh(new_category)
-    return {"message": "Category created", "category": {"id": new_category.id, "name": new_category.name}}
+    return {
+        "message": "Category created",
+        "category": {"id": new_category.id, "name": new_category.name},
+    }
 
-@router.get("/admin/categories")
+
+@router.get("/admin/categories", tags=["Admin"])
 def list_categories(
-    db: Session = Depends(get_db),
-    admin: dict = Depends(get_current_admin)
+    db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)
 ):
+    """
+    Get all categories.
+
+    This endpoint is protected and can only be accessed by an admin.
+    """
     categories = db.query(Category).all()
     return [{"id": c.id, "name": c.name} for c in categories]
 
-@router.put("/admin/categories/{category_id}")
+
+@router.put("/admin/categories/{category_id}", tags=["Admin"])
 def update_category(
-    category_id: int, 
-    category: CategoryCreate, 
-    db: Session = Depends(get_db), 
-    admin: dict = Depends(get_current_admin)
+    category_id: int,
+    category: CategoryCreate,
+    db: Session = Depends(get_db),
+    admin: dict = Depends(get_current_admin),
 ):
+    """
+    Update a category by its ID.
+
+    This endpoint is protected and can only be accessed by an admin.
+    """
     cat = db.query(Category).filter(Category.id == category_id).first()
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
@@ -163,12 +155,18 @@ def update_category(
     db.refresh(cat)
     return {"id": cat.id, "name": cat.name}
 
-@router.delete("/admin/categories/{category_id}")
+
+@router.delete("/admin/categories/{category_id}", tags=["Admin"])
 def delete_category(
-    category_id: int, 
-    db: Session = Depends(get_db), 
-    admin: dict = Depends(get_current_admin)
+    category_id: int,
+    db: Session = Depends(get_db),
+    admin: dict = Depends(get_current_admin),
 ):
+    """
+    Delete a category by its ID.
+
+    This endpoint is protected and can only be accessed by an admin.
+    """
     cat = db.query(Category).filter(Category.id == category_id).first()
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
@@ -176,17 +174,64 @@ def delete_category(
     db.commit()
     return {"detail": "Category deleted"}
 
-@router.get("/products/random")
+
+@router.get("/products/random", tags=["Products"])
 def get_random_products(db: Session = Depends(get_db)):
+    """
+    Get a list of all products.
+    """
     products = db.query(Product).all()
-    return [
-        {
-            "id": product.id,
-            "name": product.name,
-            "price": product.price,
-            "quantity": product.quantity,
-            "description": product.description,
-            "image_url": product.image_url
-        }
-        for product in products
-    ]
+    return products
+
+
+@router.get(
+    "/product-requests",
+    response_model=List[ProductRequestResponseSchema],
+    tags=["Admin"],
+)
+def get_all_product_requests(
+    db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)
+):
+    """
+    Get all product requests.
+
+    This endpoint is protected and can only be accessed by an admin.
+    """
+    requests = db.query(ProductRequest).all()
+    return requests
+
+
+@router.put("/orders/{order_id}/mark_paid", tags=["Admin"])
+def mark_order_paid(
+    order_id: int, db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)
+):
+    """
+    Mark an order as paid.
+
+    This endpoint is protected and can only be accessed by an admin.
+    """
+    order = db.query(Order).get(order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    order.payment_status = "Paid"
+    order.paid = True
+    order.paid_at = datetime.utcnow()
+    db.commit()
+    return {"message": "Marked as paid"}
+
+
+@router.put("/orders/{order_id}/mark_delivered", tags=["Admin"])
+def mark_order_delivered(
+    order_id: int, db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)
+):
+    """
+    Mark an order as delivered.
+
+    This endpoint is protected and can only be accessed by an admin.
+    """
+    order = db.query(Order).get(order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    order.status = "Delivered"
+    db.commit()
+    return {"message": "Marked as delivered"}
