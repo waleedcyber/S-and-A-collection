@@ -95,6 +95,10 @@ def get_random_products(db: Session = Depends(get_db)):
     random_products = random.sample(all_products, sample_size) if all_products else []
     return random_products
 
-@router.get("/categories")
+@router.get("/categories", tags=["Categories"])
 def get_categories(db: Session = Depends(get_db)):
-    return db.query(Category).all()
+    """
+    Public endpoint: fetch all categories (no admin required).
+    """
+    categories = db.query(Category).all()
+    return [{"id": c.id, "name": c.name} for c in categories]

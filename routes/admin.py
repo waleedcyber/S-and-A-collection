@@ -121,7 +121,7 @@ def delete_product(
     db.commit()
     return {"message": "Product deleted successfully"}
 
-@router.post("/admin/categories", status_code=201, tags=["Admin"])
+@router.post("/admin/categories", status_code=201, tags=["Admin Categories"])
 def create_category(
     category: CategoryCreate,
     db: Session = Depends(get_db),
@@ -147,7 +147,7 @@ def create_category(
 
 
 
-@router.get("/admin/categories", tags=["Admin"])
+@router.get("/admin/categories", tags=["Admin Categories"])
 def list_categories(
     db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)
 ):
@@ -160,7 +160,7 @@ def list_categories(
     return [{"id": c.id, "name": c.name} for c in categories]
 
 
-@router.put("/admin/categories/{category_id}", tags=["Admin"])
+@router.put("/admin/categories/{category_id}", tags=["Admin Categories"])
 def update_category(
     category_id: int,
     category: CategoryCreate,
@@ -181,7 +181,7 @@ def update_category(
     return {"id": cat.id, "name": cat.name}
 
 
-@router.delete("/admin/categories/{category_id}", tags=["Admin"])
+@router.delete("/admin/categories/{category_id}", tags=["Admin Categories"])
 def delete_category(
     category_id: int,
     db: Session = Depends(get_db),
