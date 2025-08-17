@@ -27,8 +27,9 @@ def admin_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
         raise HTTPException(status_code=400, detail="Invalid username or password")
 
     # 2. Verify password
-    if not verify_password(form_data.password, admin.hashed_password):
+    if not verify_password(form_data.password, admin.password):
         raise HTTPException(status_code=400, detail="Invalid username or password")
+
 
     # 3. Create JWT token
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
