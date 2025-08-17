@@ -120,7 +120,6 @@ def delete_product(
     db.commit()
     return {"message": "Product deleted successfully"}
 
-
 @router.post("/admin/categories", status_code=201, tags=["Admin"])
 def create_category(
     category: CategoryCreate,
@@ -143,6 +142,23 @@ def create_category(
         "message": "Category created",
         "category": {"id": new_category.id, "name": new_category.name},
     }
+@router.post("/admin/login")
+def admin_login(
+    username: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Admin login endpoint.
+    """
+    # For now, let's just print the credentials to the console
+    # In real scenario, you'd want to verify these credentials
+    # and probably return a token or some sort of admin session
+    print(f"Admin Login Attempt: {username=} {password=}")
+
+    return {"message": "Admin login successful"}
+
+
 
 
 @router.get("/admin/categories", tags=["Admin"])
@@ -258,3 +274,19 @@ def mark_order_delivered(
     order.status = "Delivered"
     db.commit()
     return {"message": "Marked as delivered"}
+    
+
+@router.get("/products/random")
+def get_random_products(db: Session = Depends(get_db)):
+    products = db.query(Product).all()
+    return [
+        {
+            "id": product.id,
+            "name": product.name,
+            "price": product.price,
+            "quantity": product.quantity,
+            "description": product.description,
+            "image_url": product.image_url
+        }
+        for product in products
+    ]
