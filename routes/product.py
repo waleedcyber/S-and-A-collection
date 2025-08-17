@@ -6,6 +6,9 @@ from models import Product, Category
 from schemas import ProductCreate, ProductOut
 import os
 import random
+from sqlalchemy.orm import Session
+from db import SessionLocal
+from models import Category
 
 router = APIRouter()
 
@@ -95,6 +98,12 @@ def get_random_products(db: Session = Depends(get_db)):
     random_products = random.sample(all_products, sample_size) if all_products else []
     return random_products
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 @router.get("/categories", tags=["Categories"])
 def get_categories(db: Session = Depends(get_db)):
     """

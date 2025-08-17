@@ -1,5 +1,5 @@
 # main.py
-from fastapi import FastAPI
+from fastapi import FastAPI,Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
@@ -10,6 +10,10 @@ from routes.product import router as product_router
 from routes.admin import router as admin_router
 from routes.product_request import router as product_request_router
 
+ 
+from sqlalchemy.orm import Session
+from db import SessionLocal
+from models import Category
 # ✅ Lifespan setup (runs once at startup)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -30,6 +34,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 
 # ✅ Include routers under /api
