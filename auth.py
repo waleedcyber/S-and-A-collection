@@ -15,7 +15,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 # 🔑 Token dependency (used in main.py get_current_admin)
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="admin/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/login")
 
 # 🧂 Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

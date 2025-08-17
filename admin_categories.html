@@ -35,157 +35,161 @@
     <div class="category-list" id="categoryList"></div>
   </div>
   <script>
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Access denied. Please log in first.");
-      window.location.href = "admin_login.html";
-    }
+  // Change this depending on environment
+  const baseUrl = "http://127.0.0.1:8000/api";
+  // const baseUrl = "https://sandscollection.onrender.com/api";
 
-    async function fetchCategories() {
-      const res = await fetch("/api/admin/categories", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const list = document.getElementById("categoryList");
-      list.innerHTML = "";
-      if (res.ok) {
-        const categories = await res.json();
-        categories.forEach(cat => {
-          const div = document.createElement("div");
-          div.className = "category-item";
-          div.dataset.id = cat.id;
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Access denied. Please log in first.");
+    window.location.href = "admin_login.html";
+  }
 
-          const nameSpan = document.createElement("span");
-          nameSpan.className = "category-name";
-          nameSpan.textContent = cat.name;
-
-          // Edit input (hidden by default)
-          const editInput = document.createElement("input");
-          editInput.type = "text";
-          editInput.value = cat.name;
-          editInput.className = "edit-input";
-          editInput.style.display = "none";
-
-          // Actions
-          const actions = document.createElement("span");
-          actions.className = "actions";
-
-          const editBtn = document.createElement("button");
-          editBtn.textContent = "Edit";
-          editBtn.onclick = () => {
-            nameSpan.style.display = "none";
-            editInput.style.display = "inline-block";
-            editBtn.style.display = "none";
-            saveBtn.style.display = "inline-block";
-            cancelBtn.style.display = "inline-block";
-          };
-
-          const saveBtn = document.createElement("button");
-          saveBtn.textContent = "Save";
-          saveBtn.style.display = "none";
-          saveBtn.onclick = async () => {
-            await updateCategory(cat.id, editInput.value);
-            fetchCategories();
-          };
-
-          const cancelBtn = document.createElement("button");
-          cancelBtn.textContent = "Cancel";
-          cancelBtn.style.display = "none";
-          cancelBtn.onclick = () => {
-            nameSpan.style.display = "inline";
-            editInput.style.display = "none";
-            editBtn.style.display = "inline-block";
-            saveBtn.style.display = "none";
-            cancelBtn.style.display = "none";
-          };
-
-          const deleteBtn = document.createElement("button");
-          deleteBtn.textContent = "Delete";
-          deleteBtn.onclick = async () => {
-            if (confirm("Delete this category?")) {
-              await deleteCategory(cat.id);
-              fetchCategories();
-            }
-          };
-
-          actions.append(editBtn, saveBtn, cancelBtn, deleteBtn);
-          div.append(nameSpan, editInput, actions);
-          list.appendChild(div);
-        });
-      } else {
-        list.innerHTML = "<p>Failed to load categories.</p>";
-      }
-    }
-
-    async function addCategory(name) {
-      const msg = document.getElementById("msg");
-      msg.textContent = "";
-      const res = await fetch("http://127.0.0.1:8000/admin/categories", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ name })
-      });
-      if (res.ok) {
-        msg.style.color = "green";
-        msg.textContent = "Category added!";
-        fetchCategories();
-      } else {
-        const data = await res.json();
-        msg.style.color = "red";
-        msg.textContent = data.detail || "Failed to add category.";
-      }
-    }
-
-    async function updateCategory(id, name) {
-      const msg = document.getElementById("msg");
-      msg.textContent = "";
-      const res = await fetch(`/api/admin/categories/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ name })
-      });
-      if (res.ok) {
-        msg.style.color = "green";
-        msg.textContent = "Category updated!";
-      } else {
-        const data = await res.json();
-        msg.style.color = "red";
-        msg.textContent = data.detail || "Failed to update category.";
-      }
-    }
-
-    async function deleteCategory(id) {
-      const msg = document.getElementById("msg");
-      msg.textContent = "";
-      const res = await fetch(`http://127.0.0.1:8000/admin/categories/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        msg.style.color = "green";
-        msg.textContent = "Category deleted!";
-      } else {
-        const data = await res.json();
-        msg.style.color = "red";
-        msg.textContent = data.detail || "Failed to delete category.";
-      }
-    }
-
-    document.getElementById("addCategoryForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      const name = document.getElementById("newCategoryName").value.trim();
-      if (name) {
-        await addCategory(name);
-        document.getElementById("addCategoryForm").reset();
-      }
+  async function fetchCategories() {
+    const res = await fetch(`${baseUrl}/admin/categories`, {
+      headers: { Authorization: `Bearer ${token}` }
     });
+    const list = document.getElementById("categoryList");
+    list.innerHTML = "";
+    if (res.ok) {
+      const categories = await res.json();
+      categories.forEach(cat => {
+        const div = document.createElement("div");
+        div.className = "category-item";
+        div.dataset.id = cat.id;
 
-    fetchCategories();
-  </script>
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "category-name";
+        nameSpan.textContent = cat.name;
+
+        // Edit input (hidden by default)
+        const editInput = document.createElement("input");
+        editInput.type = "text";
+        editInput.value = cat.name;
+        editInput.className = "edit-input";
+        editInput.style.display = "none";
+
+        // Actions
+        const actions = document.createElement("span");
+        actions.className = "actions";
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "Edit";
+        editBtn.onclick = () => {
+          nameSpan.style.display = "none";
+          editInput.style.display = "inline-block";
+          editBtn.style.display = "none";
+          saveBtn.style.display = "inline-block";
+          cancelBtn.style.display = "inline-block";
+        };
+
+        const saveBtn = document.createElement("button");
+        saveBtn.textContent = "Save";
+        saveBtn.style.display = "none";
+        saveBtn.onclick = async () => {
+          await updateCategory(cat.id, editInput.value);
+          fetchCategories();
+        };
+
+        const cancelBtn = document.createElement("button");
+        cancelBtn.textContent = "Cancel";
+        cancelBtn.style.display = "none";
+        cancelBtn.onclick = () => {
+          nameSpan.style.display = "inline";
+          editInput.style.display = "none";
+          editBtn.style.display = "inline-block";
+          saveBtn.style.display = "none";
+          cancelBtn.style.display = "none";
+        };
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.onclick = async () => {
+          if (confirm("Delete this category?")) {
+            await deleteCategory(cat.id);
+            fetchCategories();
+          }
+        };
+
+        actions.append(editBtn, saveBtn, cancelBtn, deleteBtn);
+        div.append(nameSpan, editInput, actions);
+        list.appendChild(div);
+      });
+    } else {
+      list.innerHTML = "<p>Failed to load categories.</p>";
+    }
+  }
+
+  async function addCategory(name) {
+    const msg = document.getElementById("msg");
+    msg.textContent = "";
+    const res = await fetch(`${baseUrl}/admin/categories`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ name })
+    });
+    if (res.ok) {
+      msg.style.color = "green";
+      msg.textContent = "Category added!";
+      fetchCategories();
+    } else {
+      const data = await res.json();
+      msg.style.color = "red";
+      msg.textContent = data.detail || "Failed to add category.";
+    }
+  }
+
+  async function updateCategory(id, name) {
+    const msg = document.getElementById("msg");
+    msg.textContent = "";
+    const res = await fetch(`${baseUrl}/admin/categories/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ name })
+    });
+    if (res.ok) {
+      msg.style.color = "green";
+      msg.textContent = "Category updated!";
+    } else {
+      const data = await res.json();
+      msg.style.color = "red";
+      msg.textContent = data.detail || "Failed to update category.";
+    }
+  }
+
+  async function deleteCategory(id) {
+    const msg = document.getElementById("msg");
+    msg.textContent = "";
+    const res = await fetch(`${baseUrl}/admin/categories/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      msg.style.color = "green";
+      msg.textContent = "Category deleted!";
+    } else {
+      const data = await res.json();
+      msg.style.color = "red";
+      msg.textContent = data.detail || "Failed to delete category.";
+    }
+  }
+
+  document.getElementById("addCategoryForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const name = document.getElementById("newCategoryName").value.trim();
+    if (name) {
+      await addCategory(name);
+      document.getElementById("addCategoryForm").reset();
+    }
+  });
+
+  fetchCategories();
+</script>
 </body>
 </html>

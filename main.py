@@ -17,12 +17,15 @@ async def lifespan(app: FastAPI):
     yield
 
 # ✅ Create FastAPI app
-app = FastAPI(lifespan=lifespan)
-
-# ✅ CORS settings
+app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://127.0.0.1:5500",  # local testing
+        "http://localhost:5500",  # local alternative
+        "https://sandscollection.onrender.com",  # if you host frontend on same backend
+        "https://your-frontend-domain.com",  # replace with your deployed frontend domain
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

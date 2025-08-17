@@ -9,7 +9,7 @@ from auth import get_current_admin
 from auth import verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from uuid import uuid4
 import os
-from datetime import datetime
+from datetime import datetime,timedelta
 from typing import List
 import shutil
 
@@ -142,21 +142,6 @@ def create_category(
         "message": "Category created",
         "category": {"id": new_category.id, "name": new_category.name},
     }
-@router.post("/admin/login")
-def admin_login(
-    username: str = Form(...),
-    password: str = Form(...),
-    db: Session = Depends(get_db)
-):
-    """
-    Admin login endpoint.
-    """
-    # For now, let's just print the credentials to the console
-    # In real scenario, you'd want to verify these credentials
-    # and probably return a token or some sort of admin session
-    print(f"Admin Login Attempt: {username=} {password=}")
-
-    return {"message": "Admin login successful"}
 
 
 

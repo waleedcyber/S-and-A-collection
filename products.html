@@ -376,16 +376,17 @@ select {
 
 
 
-  <script>
-    const apiUrl = '/api/products/random';
+<script>
+  // ✅ Set this once, switch between dev and prod easily
+  const baseUrl = "http://127.0.0.1:8000/api";
+  // const baseUrl = "https://sandscollection.onrender.com/api";
 
-    const categorySelect = document.getElementById('category');
-    const sortSelect = document.getElementById('sort');
-    const productGrid = document.getElementById('productGrid');
-    const searchInput = document.getElementById('searchInput');
-    let allProducts = [];
-
-    let currentModalProduct = null;
+  const categorySelect = document.getElementById('category');
+  const sortSelect = document.getElementById('sort');
+  const productGrid = document.getElementById('productGrid');
+  const searchInput = document.getElementById('searchInput');
+  let allProducts = [];
+  let currentModalProduct = null;
 
   function openModal(product) {
     currentModalProduct = product;
@@ -409,94 +410,92 @@ select {
     document.getElementById("productModal").style.display = "block";
   }
 
+  function closeModal() {
+    document.getElementById("productModal").style.display = "none";
+    closeNotifyModal();
+  }
 
-    function closeModal() {
-      document.getElementById("productModal").style.display = "none";
+  function modalAddToCart() {
+    if (!currentModalProduct) return;
+    addToCart(currentModalProduct);
+    closeModal();
+  }
+
+  function addToCart(product) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const existing = cart.find(item => item.id === product.id);
+
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      cart.push({ ...product, quantity: 1 });
     }
 
-    function modalAddToCart() {
-      if (!currentModalProduct) return;
-      addToCart(currentModalProduct);
+    localStorage.setItem('cart', JSON.stringify(cart));
+    alert('Added to cart!');
+    updateCartCount();
+  }
+
+  function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    document.getElementById('cartCount').innerText = cart.length;
+  }
+
+  function goToCart() {
+    window.location.href = 'cart.html';
+  }
+
+  async function fetchProducts() {
+    const category = categorySelect.value;
+    const sort = sortSelect.value;
+
+    let url = `${baseUrl}/products?`;
+    if (category) url += `category_id=${category}&`;
+    if (sort) url += `sort_by=${sort}`;
+
+    try {
+      const res = await fetch(url);
+      allProducts = await res.json();
+      renderProducts(allProducts);
+    } catch (err) {
+      productGrid.innerHTML = '<p style="text-align:center;color:red;">⚠️ Error loading products</p>';
+    }
+  }
+
+  window.onclick = function(event) {
+    const modal = document.getElementById("productModal");
+    if (event.target == modal) {
       closeModal();
     }
+  };
 
-    function addToCart(product) {
-      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  function renderProducts(products) {
+    productGrid.innerHTML = '';
+    products.forEach(product => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = `
+        <img src="${product.image_url || 'https://via.placeholder.com/100x100'}" alt="${product.name}" />
+        <div class="product-info">
+          <h3>${product.name}</h3>
+          <p>₦${product.price}</p>
+        </div>
+      `;
+      card.addEventListener("click", () => openModal(product));
+      productGrid.appendChild(card);
+    });
+  }
 
-      // Check if product already exists
-      const existing = cart.find(item => item.id === product.id);
+  function filterProducts() {
+    const keyword = searchInput.value.toLowerCase();
+    const filtered = allProducts.filter(p =>
+      p.name.toLowerCase().includes(keyword) ||
+      (p.description && p.description.toLowerCase().includes(keyword))
+    );
+    renderProducts(filtered);
+  }
 
-      if (existing) {
-        existing.quantity += 1; // 🔁 Increase quantity
-      } else {
-        cart.push({ ...product, quantity: 1 }); // ✅ Start with quantity 1
-      }
-
-      localStorage.setItem('cart', JSON.stringify(cart));
-      alert('Added to cart!');
-      updateCartCount();
-    }
-
-
-    function updateCartCount() {
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      document.getElementById('cartCount').innerText = cart.length;
-    }
-
-    function goToCart() {
-      window.location.href = 'cart.html';
-    }
-
-    async function fetchProducts() {
-      const category = categorySelect.value;
-      const sort = sortSelect.value;
-
-      let url = `/api/products?`;
-      if (category) url += `category_id=${category}&`;
-      if (sort) url += `sort_by=${sort}`;
-
-      try {
-        const res = await fetch(url);
-        allProducts = await res.json();
-        renderProducts(allProducts);
-      } catch (err) {
-        productGrid.innerHTML = '<p style="text-align:center;color:red;">⚠️ Error loading products</p>';
-      }
-    }
-
-        window.onclick = function(event) {
-        const modal = document.getElementById("productModal");
-        if (event.target == modal) {
-            closeModal();
-        }
-    };
-
-    function renderProducts(products) {
-      productGrid.innerHTML = '';
-      products.forEach(product => {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.innerHTML = `
-          <img src="${product.image_url || 'https://via.placeholder.com/100x100'}" alt="${product.name}" />
-          <div class="product-info">
-            <h3>${product.name}</h3>
-            <p>₦${product.price}</p>
-          </div>
-        `;
-        card.addEventListener("click", () => openModal(product));
-        productGrid.appendChild(card);
-      });
-    }
-
-    function filterProducts() {
-      const keyword = searchInput.value.toLowerCase();
-      const filtered = allProducts.filter(p =>
-        p.name.toLowerCase().includes(keyword) ||
-        (p.description && p.description.toLowerCase().includes(keyword))
-      );
-      renderProducts(filtered);
-    }
-
+  // 🔔 Notify form
   const notifyForm = document.getElementById("notifyForm");
   const notifyResponseMsg = document.getElementById("notifyResponseMsg");
 
@@ -522,7 +521,7 @@ select {
     };
 
     try {
-      const res = await fetch("/api/request-product", {
+      const res = await fetch(`${baseUrl}/request-product`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -534,8 +533,7 @@ select {
         notifyResponseMsg.style.color = "green";
         notifyResponseMsg.innerText = data.message || "Request submitted!";
         notifyForm.reset();
-
-        setTimeout(closeNotifyModal, 2000); // Auto-close after 2 sec
+        setTimeout(closeNotifyModal, 2000);
       } else {
         notifyResponseMsg.style.color = "red";
         notifyResponseMsg.innerText = data.detail || "Something went wrong.";
@@ -550,42 +548,39 @@ select {
   function openNotifyModal(productId) {
     document.getElementById("notifyProductId").value = productId;
     document.getElementById("notifyModal").style.display = "block";
-    notifyResponseMsg.innerText = ""; // Reset message
+    notifyResponseMsg.innerText = "";
   }
 
   function closeNotifyModal() {
     document.getElementById("notifyModal").style.display = "none";
   }
 
-  function closeModal() {
-    document.getElementById("productModal").style.display = "none";
-    closeNotifyModal();
-  }
-
-    categorySelect.addEventListener('change', fetchProducts);
-    sortSelect.addEventListener('change', fetchProducts);
-
-    async function loadCategories() {
-  try {
-    const res = await fetch('/api/categories');
-    if (res.ok) {
-      const categories = await res.json();
-      categorySelect.innerHTML = '<option value="">All Categories</option>';
-      categories.forEach(cat => {
-        const opt = document.createElement('option');
-        opt.value = cat.id;
-        opt.textContent = cat.name;
-        categorySelect.appendChild(opt);
-      });
+  // 🔥 Load categories correctly
+  async function loadCategories() {
+    try {
+      const res = await fetch(`${baseUrl}/categories`);
+      if (res.ok) {
+        const categories = await res.json();
+        categorySelect.innerHTML = '<option value="">All Categories</option>';
+        categories.forEach(cat => {
+          const opt = document.createElement('option');
+          opt.value = cat.id;
+          opt.textContent = cat.name;
+          categorySelect.appendChild(opt);
+        });
+      }
+    } catch (err) {
+      console.error("Error loading categories", err);
     }
-  } catch (err) {
-    // Optionally handle error
   }
-}
-loadCategories();
 
-    fetchProducts();
-    updateCartCount();
-  </script>
+  categorySelect.addEventListener('change', fetchProducts);
+  sortSelect.addEventListener('change', fetchProducts);
+
+  loadCategories();
+  fetchProducts();
+  updateCartCount();
+</script>
+
 </body>
 </html>
