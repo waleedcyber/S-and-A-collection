@@ -124,6 +124,22 @@ def delete_product(
     db.commit()
     return {"message": "Product deleted successfully"}
 
+@router.post("/admin/login")
+def admin_login(
+    username: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Admin login endpoint.
+    """
+    # For now, let's just print the credentials to the console
+    # In real scenario, you'd want to verify these credentials
+    # and probably return a token or some sort of admin session
+    print(f"Admin Login Attempt: {username=} {password=}")
+
+    return {"message": "Admin login successful"}
+
 @router.post("/admin/categories", status_code=201)
 def create_category(
     category: CategoryCreate,
@@ -139,6 +155,10 @@ def create_category(
     db.commit()
     db.refresh(new_category)
     return {"message": "Category created", "category": {"id": new_category.id, "name": new_category.name}}
+
+@router.get("/categories")
+def get_categories(db: Session = Depends(get_db)):
+    return db.query(Category).all()
 
 @router.get("/admin/categories")
 def list_categories(
@@ -174,4 +194,19 @@ def delete_category(
         raise HTTPException(status_code=404, detail="Category not found")
     db.delete(cat)
     db.commit()
-    return {"detail": "Category deleted"}
+    
+
+@router.get("/products/random")
+def get_random_products(db: Session = Depends(get_db)):
+    products = db.query(Product).all()
+    return [
+        {
+            "id": product.id,
+            "name": product.name,
+            "price": product.price,
+            "quantity": product.quantity,
+            "description": product.description,
+            "image_url": product.image_url
+        }
+        for product in products
+    ]
