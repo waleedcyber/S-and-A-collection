@@ -35,6 +35,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+app.get("/categories", tags=["Categories"])
+def get_categories(db: Session = Depends(get_db)):
+    """
+    Public endpoint: fetch all categories (no admin required).
+    """
+    categories = db.query(Category).all()
+    return [{"id": c.id, "name": c.name} for c in categories]
 
 
 # ✅ Include routers under /api
