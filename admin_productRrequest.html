@@ -74,11 +74,16 @@
   </div>
 
   <script>
+    // Change this depending on environment
+    //const baseUrl = "http://127.0.0.1:8000/api";
+    const baseUrl = "https://s-and-s-collection.onrender.com/api";
+
     window.onload = async function () {
       const token = localStorage.getItem("token");
       const messageDiv = document.getElementById("message");
       const table = document.querySelector("table");
 
+      // This check is good. It prevents the code from running without a token.
       if (!token) {
         alert("Access denied. Please log in first.");
         window.location.href = "admin_login.html";
@@ -86,13 +91,16 @@
       }
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/admin/product-requests", {
+        // Here is the changed line:
+        // We now use the 'baseUrl' and the correct API path.
+        const res = await fetch(`${baseUrl}/admin/product-requests`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
 
         if (!res.ok) {
+          // This will catch errors if the token is invalid or expired
           throw new Error("Token invalid or expired");
         }
 
@@ -117,6 +125,7 @@
           });
         }
       } catch (error) {
+        // This 'catch' block will handle the expired token error
         alert("Session expired or unauthorized. Please log in again.");
         localStorage.removeItem("token");
         window.location.href = "admin_login.html";
