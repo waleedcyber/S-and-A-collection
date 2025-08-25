@@ -74,85 +74,63 @@
     <p id="responseMsg"></p>
   </div>
 
-<script>
-  // Check if the user is logged in
-  window.onload = async function () {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Access denied. Please log in first.");
-      window.location.href = "admin_login.html";
-      return;
-    }
+  <script>
+    // Remove or comment out the baseUrl definition here
+    // const baseUrl = "https://s-and-s-collection.onrender.com/api";
 
-    // Fetch categories dynamically
-    try {
-      const res = await fetch('/api/admin/categories', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      if (res.ok) {
-        const categories = await res.json();
-        const select = document.getElementById('categorySelect');
-        categories.forEach(cat => {
-          const opt = document.createElement('option');
-          opt.value = cat.id;
-          opt.textContent = cat.name;
-          select.appendChild(opt);
+    window.onload = async function () {
+      const token = localStorage.getItem("token");
+      const messageDiv = document.getElementById("message");
+      const table = document.querySelector("table");
+
+      if (!token) {
+        alert("Access denied. Please log in first.");
+        window.location.href = "admin_login.html";
+        return;
+      }
+
+      try {
+        // CHANGED: Use a relative path, consistent with your working upload page.
+        // This will resolve to https://s-and-s-collection.onrender.com/api/admin/product-requests
+        const res = await fetch('/api/admin/product-requests', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
-      } else {
-        alert("Failed to load categories.");
+
+        if (!res.ok) {
+          // This will still catch 401 Unauthorized (session expired/invalid token)
+          // and other non-2xx status codes.
+          throw new Error("Token invalid or expired or server error");
+        }
+
+        const data = await res.json();
+        const tbody = document.getElementById("requests-table-body");
+
+        if (data.length === 0) {
+          messageDiv.textContent = "No product requests found.";
+        } else {
+          messageDiv.style.display = "none";
+          table.style.display = "table";
+
+          data.forEach(request => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${request.product_name}</td>
+              <td>${request.email}</td>
+              <td>${request.quantity}</td>
+              <td>${request.message}</td>
+            `;
+            tbody.appendChild(row);
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching product requests:", error); // Log the actual error
+        alert("Session expired or unauthorized. Please log in again.");
+        localStorage.removeItem("token");
+        window.location.href = "admin_login.html";
       }
-    } catch (err) {
-      alert("Network error loading categories.");
-    }
-  };
-
-  document.getElementById('productForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    const form = e.target;
-    const formData = new FormData();
-
-    formData.append('name', form.name.value);
-    formData.append('price', form.price.value);
-    formData.append('category_id', form.category_id.value);
-    formData.append('description', form.description.value);
-    formData.append('quantity', form.quantity.value);
-
-    if (form.image.files.length > 0) {
-      formData.append('image', form.image.files[0]);
-    }
-
-    const token = localStorage.getItem("token");
-
-    try {
-      const res = await fetch('/api/admin/upload', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        body: formData
-      });
-
-      const msg = document.getElementById('responseMsg');
-      if (res.ok) {
-        msg.style.color = 'green';
-        msg.innerText = '✅ Product uploaded successfully!';
-        form.reset();
-      } else {
-        const errorText = await res.text();
-        msg.style.color = 'red';
-        msg.innerText = `❌ Upload failed: ${errorText}`;
-      }
-    } catch (err) {
-      console.error('Error uploading product:', err);
-      const msg = document.getElementById('responseMsg');
-      msg.style.color = 'red';
-      msg.innerText = '❌ Upload failed due to network error.';
-    }
-  });
-</script>
-
+    };
+  </script>
 </body>
 </html>
