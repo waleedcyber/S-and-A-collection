@@ -88,7 +88,7 @@
     }
     .card-content {
       padding: 20px;
-      flex-grow: 1; /* Makes content fill available space */
+      flex-grow: 1;
       display: flex;
       flex-direction: column;
     }
@@ -99,31 +99,53 @@
     .card-content p {
       font-size: 14px;
       color: #555;
-      flex-grow: 1; /* Pushes the button to the bottom */
+      flex-grow: 1;
     }
-    .card-content a {
-      display: inline-block;
+    .card-content button {
       margin-top: 15px;
       background-color: #ff6b6b;
       color: white;
       padding: 10px 15px;
       border-radius: 8px;
-      text-decoration: none;
-      text-align: center;
+      border: none;
+      cursor: pointer;
       transition: background-color 0.2s ease;
     }
-    .card-content a:hover {
+    .card-content button:hover {
       background-color: #ff4040;
     }
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    /* MODAL STYLES */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+    }
+    .modal-content img {
+      width: 100%;
+      max-height: 250px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+    .close {
+      position: absolute;
+      top: 10px; right: 15px;
+      font-size: 22px;
+      cursor: pointer;
+      color: #333;
     }
   </style>
 </head>
@@ -143,66 +165,57 @@
   </div>
 
   <h2 class="showcase-title">Featured Products</h2>
+  <section class="showcase" id="productShowcase"></section>
 
-  <!-- This section will be filled with products from our database -->
-  <section class="showcase" id="productShowcase">
-    <!-- Products will be loaded here by JavaScript -->
-  </section>
+  <!-- MODAL STRUCTURE -->
+  <div id="productModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <div id="modalBody">Loading...</div>
+    </div>
+  </div>
 
   <script>
-    // This function runs when the page has finished loading
     document.addEventListener('DOMContentLoaded', () => {
       fetchRandomProducts();
     });
 
-    // This function fetches data from our new backend route
     function fetchRandomProducts() {
-      // The URL must match the route we created in the backend
       const apiUrl = '/api/products/random';
       const showcase = document.getElementById('productShowcase');
 
       fetch(apiUrl)
         .then(response => {
-          // Check if the request was successful
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json(); // Convert the response to JSON
+          if (!response.ok) throw new Error('Network error');
+          return response.json();
         })
         .then(products => {
-          // Clear any existing content
-          showcase.innerHTML = ''; 
-          
-          // If no products are found, show a message
+          showcase.innerHTML = '';
           if (products.length === 0) {
-            showcase.innerHTML = '<p>No products to display at the moment. Please check back later!</p>';
+            showcase.innerHTML = '<p>No products to display right now.</p>';
             return;
           }
-
-          // Loop through each product and create a card for it
           products.forEach(product => {
             const card = document.createElement('div');
             card.className = 'card';
-            
-            // NOTE: You'll need to use your actual product properties here.
-            // I am assuming your product has: name, description, image_url, and id
             card.innerHTML = `
               <img src="${product.image_url || 'https://via.placeholder.com/300x180?text=No+Image'}" alt="${product.name}">
               <div class="card-content">
                 <h3>${product.name}</h3>
                 <p>${product.description}</p>
-                <a href="/product.html?id=${product.id}">View Details</a>
+                <button onclick='openModal(${JSON.stringify(product)})'>View Details</button>
               </div>
             `;
             showcase.appendChild(card);
           });
         })
         .catch(error => {
-          // If there's an error (e.g., backend is down), display a message
-          console.error('There was a problem fetching products:', error);
-          showcase.innerHTML = '<p>Sorry, we could not load products at this time.</p>';
+          console.error('Error fetching products:', error);
+          showcase.innerHTML = '<p>Could not load products.</p>';
         });
     }
-  </script>
-</body>
-</html>
+
+    function openModal(product) {
+      const modal = document.getElementById('productModal');
+      const modalBody = document.getElementById('modalBody');
+      modalBody.innerHTML

@@ -51,6 +51,15 @@
       background-color: #218838;
     }
   </style>
+
+  <script>
+    // 🔒 Check token immediately when page loads
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Access denied. Please log in first.");
+      window.location.href = "admin_login.html"; // 👈 change if your login page has another name
+    }
+  </script>
 </head>
 <body>
   <header>
@@ -75,62 +84,53 @@
   </div>
 
   <script>
-    // Remove or comment out the baseUrl definition here
-    // const baseUrl = "https://s-and-s-collection.onrender.com/api";
+    const baseUrl = "https://s-and-s-collection.onrender.com/api";
 
-    window.onload = async function () {
-      const token = localStorage.getItem("token");
-      const messageDiv = document.getElementById("message");
-      const table = document.querySelector("table");
+    // When form is submitted
+    document.getElementById("productForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
 
-      if (!token) {
-        alert("Access denied. Please log in first.");
-        window.location.href = "admin_login.html";
-        return;
-      }
+      const formData = new FormData(this);
+      const res = await fetch(`${baseUrl}/admin/products`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        },
+        body: formData
+      });
 
-      try {
-        // CHANGED: Use a relative path, consistent with your working upload page.
-        // This will resolve to https://s-and-s-collection.onrender.com/api/admin/product-requests
-        const res = await fetch('/api/admin/product-requests', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        if (!res.ok) {
-          // This will still catch 401 Unauthorized (session expired/invalid token)
-          // and other non-2xx status codes.
-          throw new Error("Token invalid or expired or server error");
-        }
-
+      const msg = document.getElementById("responseMsg");
+      if (res.ok) {
+        msg.style.color = "green";
+        msg.textContent = "Product uploaded successfully!";
+        this.reset();
+      } else {
         const data = await res.json();
-        const tbody = document.getElementById("requests-table-body");
-
-        if (data.length === 0) {
-          messageDiv.textContent = "No product requests found.";
-        } else {
-          messageDiv.style.display = "none";
-          table.style.display = "table";
-
-          data.forEach(request => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-              <td>${request.product_name}</td>
-              <td>${request.email}</td>
-              <td>${request.quantity}</td>
-              <td>${request.message}</td>
-            `;
-            tbody.appendChild(row);
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching product requests:", error); // Log the actual error
-        alert("Session expired or unauthorized. Please log in again.");
-        localStorage.removeItem("token");
-        window.location.href = "admin_login.html";
+        msg.style.color = "red";
+        msg.textContent = data.detail || "Upload failed.";
       }
-    };
+    });
+
+    // Fetch categories
+    async function fetchCategories() {
+      const res = await fetch(`${baseUrl}/admin/categories`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+
+      if (res.ok) {
+        const categories = await res.json();
+        const select = document.getElementById("categorySelect");
+        select.innerHTML = `<option value="">-- Select Category --</option>`;
+        categories.forEach(cat => {
+          const option = document.createElement("option");
+          option.value = cat.id;
+          option.textContent = cat.name;
+          select.appendChild(option);
+        });
+      }
+    }
+
+    fetchCategories();
   </script>
 </body>
 </html>
