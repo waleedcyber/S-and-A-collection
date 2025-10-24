@@ -3,124 +3,254 @@
 <head>
   <meta charset="UTF-8" />
   <title>Checkout - S&A Collection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: sans-serif;
-      background-color: #f7f7f7;
+      font-family: 'Poppins', sans-serif;
+      background-color: #f0f2f5;
       padding: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      margin: 0;
     }
     .checkout-container {
       max-width: 600px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
-    }
-    input, textarea, button {
       width: 100%;
-      margin-bottom: 15px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      box-sizing: border-box;
     }
     h2 {
       text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+      font-weight: 600;
+      font-size: 2em;
+    }
+    .form-group {
       margin-bottom: 20px;
     }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-weight: 400;
+      font-size: 0.95em;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #dcdcdc;
+      border-radius: 10px;
+      box-sizing: border-box;
+      font-size: 1em;
+      transition: all 0.3s ease;
+    }
+    input:focus, textarea:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+      outline: none;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    button[type="submit"] {
+      background-color: #007bff;
+      color: white;
+      padding: 15px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1.1em;
+      font-weight: 600;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    button[type="submit"]:hover {
+      background-color: #0056b3;
+      transform: translateY(-2px);
+    }
     .cart-summary {
-      background: #f0f0f0;
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 8px;
+      background: #e9f5ff;
+      padding: 20px;
+      margin-bottom: 25px;
+      border-radius: 10px;
+      border: 1px solid #cce5ff;
+    }
+    .cart-summary h3 {
+      margin-top: 0;
+      color: #0056b3;
+      font-size: 1.3em;
+      margin-bottom: 15px;
+    }
+    .cart-summary ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 15px 0;
+      border-bottom: 1px dashed #cce5ff;
+      padding-bottom: 10px;
+    }
+    .cart-summary li {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.95em;
+      color: #333;
+    }
+    .cart-summary li span:first-child {
+      font-weight: 500;
+    }
+    .cart-total {
+      text-align: right;
+      font-size: 1.2em;
+      font-weight: 600;
+      color: #333;
+      margin-top: 15px;
+    }
+    #message {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1em;
+      font-weight: 500;
+    }
+    .success {
+      color: #28a745;
+    }
+    .error {
+      color: #dc3545;
     }
   </style>
 </head>
 <body>
   <div class="checkout-container">
-    <h2>Checkout</h2>
+    <h2>Secure Checkout</h2>
 
     <div class="cart-summary" id="cart-summary">
-      <!-- Cart items and total will show here -->
+      <h3>Your Order</h3>
+      <ul id="orderList">
+        <!-- Cart items will be dynamically loaded here -->
+      </ul>
+      <div class="cart-total">
+        Total: ₦<span id="orderTotal">0.00</span>
+      </div>
     </div>
 
     <form id="checkout-form">
-      <input type="text" id="name" placeholder="Full Name" required />
-      <input type="email" id="email" placeholder="Email" required />
-      <textarea id="address" placeholder="Delivery Address (optional)"></textarea>
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" placeholder="John Doe" required />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="john.doe@example.com" required />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" placeholder="+234 801 234 5678" required />
+      </div>
+
+      <div class="form-group">
+        <label for="address">Delivery Address (Street, City, State)</label>
+        <textarea id="address" placeholder="123 Main Street, Lagos, Nigeria"></textarea>
+      </div>
+
       <button type="submit">Place Order</button>
     </form>
 
-    <p id="message" style="text-align:center;"></p>
+    <p id="message"></p>
   </div>
 
- 
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const orderList = document.getElementById('orderList');
+      const orderTotalSpan = document.getElementById('orderTotal');
+      const checkoutForm = document.getElementById('checkout-form');
+      const messageElement = document.getElementById('message');
 
+      // Load cart from localStorage
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      let total = 0;
 
-    <script>
-        const orderList = document.getElementById('orderList');
-        const orderTotal = document.getElementById('orderTotal');
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-        let total = 0;
+      if (cart.length === 0) {
+        orderList.innerHTML = '<li>Your cart is empty.</li>';
+      } else {
+        orderList.innerHTML = ''; // Clear existing content
         cart.forEach(item => {
-            const li = document.createElement('li');
-            const qty = item.quantity || 1;
-            li.textContent = `${item.name} (x${qty}) - ₦${item.price * qty}`;
-            orderList.appendChild(li);
-            total += item.price * qty;
-     });
-
-        orderTotal.innerText = total;
-
-        const form = document.getElementById('checkoutForm');
-
-        form.addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            const name = form.name.value;
-            const email = form.email.value;
-            const phone = form.phone.value;
-            const address = form.address.value;
-
-            const items = cart.map(item => ({
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity || 1
-            }));
-
-            const orderData = {
-            name,
-            email,
-            phone,
-            address,
-            items,
-            total
-            };
-
-            try {
-            const response = await fetch('/orders', {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(orderData)
-            });
-
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.detail || 'Order failed');
-            }
-
-            const result = await response.json();
-            alert(`✅ Order placed successfully 😊! Your Order ID is: ${result.order_id}`);
-            localStorage.removeItem('cart');
-            window.location.href = 'product.html';
-            } catch (error) {
-            alert('❌ Failed to place order: ' + error.message);
-            console.error(error);
-            }
+          const li = document.createElement('li');
+          const qty = item.quantity || 1;
+          const itemPrice = parseFloat(item.price) * qty; // Ensure price is a number
+          li.innerHTML = `<span>${item.name} (x${qty})</span><span>₦${itemPrice.toFixed(2)}</span>`;
+          orderList.appendChild(li);
+          total += itemPrice;
         });
-    </script>
+      }
+      orderTotalSpan.innerText = total.toFixed(2); // Display total with 2 decimal places
+
+      checkoutForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        messageElement.className = ''; // Clear previous message classes
+        messageElement.textContent = 'Processing your order...';
+
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const phone = document.getElementById('phone').value;
+        const address = document.getElementById('address').value;
+
+        const items = cart.map(item => ({
+          name: item.name,
+          price: parseFloat(item.price), // Ensure price is a number
+          quantity: item.quantity || 1
+        }));
+
+        const orderData = {
+          name,
+          email,
+          phone,
+          address,
+          items,
+          total: parseFloat(total.toFixed(2)) // Send total as a number
+        };
+
+        try {
+          // The route for your backend API endpoint
+          const response = await fetch('/orders', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData)
+          });
+
+          if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || 'Order failed');
+          }
+
+          const result = await response.json();
+          messageElement.textContent = `✅ Order placed successfully! Your Order ID is: ${result.order_id}`;
+          messageElement.classList.add('success');
+          localStorage.removeItem('cart'); // Clear cart after successful order
+          // Optionally redirect after a short delay
+          setTimeout(() => {
+            window.location.href = 'product.html';
+          }, 3000);
+        } catch (error) {
+          messageElement.textContent = `❌ Failed to place order: ${error.message}`;
+          messageElement.classList.add('error');
+          console.error(error);
+        }
+      });
+    });
+  </script>
 </body>
 </html>
