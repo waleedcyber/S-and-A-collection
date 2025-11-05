@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Checkout - S&A Collection</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://js.paystack.co/v1/inline.js"></script>
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -222,8 +223,8 @@
         };
 
         try {
-          // The route for your backend API endpoint
-          const response = await fetch('/orders', {
+          // First create the order
+          const response = await fetch('http://127.0.0.1:8000/api/orders', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -232,18 +233,55 @@
           });
 
           if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.detail || 'Order failed');
+            let errBody = null;
+            try {
+              errBody = await response.json();
+            } catch (parseErr) {
+              throw new Error(response.statusText || `Request failed with status ${response.status}`);
+            }
+            throw new Error(errBody.detail || errBody.message || 'Order failed');
           }
 
+          // Get the order details from response
           const result = await response.json();
-          messageElement.textContent = `✅ Order placed successfully! Your Order ID is: ${result.order_id}`;
-          messageElement.classList.add('success');
-          localStorage.removeItem('cart'); // Clear cart after successful order
-          // Optionally redirect after a short delay
-          setTimeout(() => {
-            window.location.href = 'product.html';
-          }, 3000);
+          const orderId = result?.order?.order_id || result?.order_id || 'N/A';
+          
+          // Initialize Paystack payment
+          const paystack = new PaystackPop();
+          paystack.newTransaction({
+            key: 'pk_test_e5ca24ace5786aad1f6f343bb59406dfecd9a542', // Paystack public test key
+            email: orderData.email,
+            amount: orderData.total * 100, // Convert to kobo
+            currency: 'NGN',
+            ref: orderId, // Use the order ID as reference
+            callback: async function(response) {
+              // Verify payment on backend
+              const verifyResponse = await fetch(`http://127.0.0.1:8000/api/orders/by-code/${orderId}/mark-paid`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  reference: response.reference
+                })
+              });
+              
+              if (verifyResponse.ok) {
+                messageElement.textContent = `✅ Payment successful! Your Order ID is: ${orderId}`;
+                messageElement.classList.add('success');
+                localStorage.removeItem('cart');
+                setTimeout(() => {
+                  window.location.href = 'product.html';
+                }, 3000);
+              } else {
+                throw new Error('Payment verification failed');
+              }
+            },
+            onClose: function() {
+              messageElement.textContent = `Order created with ID: ${orderId}. Awaiting payment.`;
+              messageElement.classList.add('warning');
+            }
+          });
         } catch (error) {
           messageElement.textContent = `❌ Failed to place order: ${error.message}`;
           messageElement.classList.add('error');

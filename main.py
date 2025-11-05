@@ -8,6 +8,7 @@ from database_setup import create_tables
 from routes.product import router as product_router
 from routes.admin import router as admin_router
 from routes.product_request import router as product_request_router
+from routes.payment import router as payment_router
 
 # Import necessary for admin creation
 from sqlalchemy.orm import Session
@@ -77,6 +78,7 @@ def get_db():
 app.include_router(product_router, prefix="/api", tags=["Products"])
 app.include_router(admin_router, prefix="/api", tags=["Admin"])
 app.include_router(product_request_router, prefix="/api", tags=["Product Requests"])
+app.include_router(payment_router, prefix="/api", tags=["Payments"])
 
 # ✅ Static files
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
