@@ -59,10 +59,8 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db)):
     db.add(new_order)
     db.commit()
     db.refresh(new_order)
-    return {
-        "message": "Order created successfully! ✅",
-        "order": OrderOut.model_validate(new_order)
-    }
+    # Return the order object itself to match the response_model=OrderOut
+    return OrderOut.model_validate(new_order)
 
 @router.get("/orders", response_model=List[OrderOut])
 def get_all_orders(db: Session = Depends(get_db)):

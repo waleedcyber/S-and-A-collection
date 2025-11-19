@@ -3,23 +3,33 @@ from sqlalchemy.orm import Session
 from db import get_db
 from models import Order
 from utils.paystack import verify_paystack_transaction_sync
+import httpx
+from config import PAYSTACK_SECRET_KEY, PAYSTACK_API_URL, PAYSTACK_PUBLIC_KEY
 from datetime import datetime
 import hmac
 import hashlib
 import os
 import json
+from pydantic import BaseModel
 
 router = APIRouter()
 
 
+class VerifyRequest(BaseModel):
+    reference: str
+    order_id: str
+
+
 @router.post("/payments/verify")
-def verify_payment(reference: str, order_id: str, db: Session = Depends(get_db)):
+def verify_payment(payload: VerifyRequest, db: Session = Depends(get_db)):
     """Verify a payment using Paystack and mark the order as paid.
 
     This endpoint should be called by the frontend after the Paystack callback
     to perform server-side verification using the secret key.
     """
     # Verify using Paystack API (sync wrapper)
+    reference = payload.reference
+    order_id = payload.order_id
     data = verify_paystack_transaction_sync(reference)
 
     # Basic checks
@@ -54,6 +64,43 @@ def verify_payment(reference: str, order_id: str, db: Session = Depends(get_db))
     db.refresh(order)
 
     return {"message": "Payment verified and order marked as paid", "order_id": order.order_id}
+
+
+
+class InitializeRequest(BaseModel):
+    email: str
+    amount: float
+    order_id: str
+
+
+@router.post("/payments/initialize")
+def initialize_payment(payload: InitializeRequest):
+    """Initialize a Paystack transaction server-side so we can set callback_url and metadata.
+
+    Returns authorization_url that the frontend can redirect the user to, or the access_token
+    for inline transactions.
+    """
+    callback_url = os.getenv("PAYSTACK_CALLBACK_URL") or "http://127.0.0.1:5500/order-success.html"
+
+    headers = {
+        "Authorization": f"Bearer {PAYSTACK_SECRET_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    payload_data = {
+        "email": payload.email,
+        "amount": int(payload.amount * 100),
+        "reference": payload.order_id,
+        "callback_url": callback_url,
+        "metadata": {"order_id": payload.order_id}
+    }
+
+    resp = httpx.post(f"{PAYSTACK_API_URL}/transaction/initialize", headers=headers, json=payload_data)
+    if resp.status_code != 200 and resp.status_code != 201:
+        raise HTTPException(status_code=400, detail="Failed to initialize payment")
+
+    data = resp.json()
+    return {"authorization_url": data.get("data", {}).get("authorization_url"), "data": data.get("data")}
 
 
 @router.post("/payments/webhook")

@@ -246,42 +246,24 @@
           const result = await response.json();
           const orderId = result?.order?.order_id || result?.order_id || 'N/A';
           
-          // Initialize Paystack payment
-          const paystack = new PaystackPop();
-          paystack.newTransaction({
-            key: 'pk_test_e5ca24ace5786aad1f6f343bb59406dfecd9a542', // Paystack public test key
-            email: orderData.email,
-            amount: orderData.total * 100, // Convert to kobo
-            currency: 'NGN',
-            ref: orderId, // Use the order ID as reference
-            callback: async function(response) {
-              // Verify payment on backend
-              const verifyResponse = await fetch(`http://127.0.0.1:8000/api/orders/by-code/${orderId}/mark-paid`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  reference: response.reference
-                })
-              });
-              
-              if (verifyResponse.ok) {
-                messageElement.textContent = `✅ Payment successful! Your Order ID is: ${orderId}`;
-                messageElement.classList.add('success');
-                localStorage.removeItem('cart');
-                setTimeout(() => {
-                  window.location.href = 'product.html';
-                }, 3000);
-              } else {
-                throw new Error('Payment verification failed');
-              }
-            },
-            onClose: function() {
-              messageElement.textContent = `Order created with ID: ${orderId}. Awaiting payment.`;
-              messageElement.classList.add('warning');
-            }
+          // Initialize payment server-side so we can set callback_url and metadata
+          const initRes = await fetch('http://127.0.0.1:8000/api/payments/initialize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: orderData.email, amount: orderData.total, order_id: orderId })
           });
+
+          if (!initRes.ok) {
+            const err = await initRes.json().catch(() => ({}));
+            throw new Error(err.detail || 'Failed to initialize payment');
+          }
+
+          const initData = await initRes.json();
+          const authUrl = initData.authorization_url || initData.data?.authorization_url;
+          if (!authUrl) throw new Error('No authorization URL returned');
+
+          // Redirect user to Paystack hosted payment page
+          window.location.href = authUrl;
         } catch (error) {
           messageElement.textContent = `❌ Failed to place order: ${error.message}`;
           messageElement.classList.add('error');

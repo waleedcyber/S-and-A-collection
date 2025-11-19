@@ -49,35 +49,35 @@ async def verify_paystack_transaction(reference: str) -> dict:
         return result["data"]
 
 
-    def verify_paystack_transaction_sync(reference: str) -> dict:
-        """Synchronous wrapper for verifying a Paystack transaction.
-        Useful for synchronous FastAPI routes that use SQLAlchemy sync sessions.
-        Returns the `data` object from Paystack on success or raises HTTPException on failure.
-        """
-        if not PAYSTACK_SECRET_KEY:
-            raise HTTPException(
-                status_code=500,
-                detail="Paystack secret key not configured"
-            )
+def verify_paystack_transaction_sync(reference: str) -> dict:
+    """Synchronous wrapper for verifying a Paystack transaction.
+    Useful for synchronous FastAPI routes that use SQLAlchemy sync sessions.
+    Returns the `data` object from Paystack on success or raises HTTPException on failure.
+    """
+    if not PAYSTACK_SECRET_KEY:
+        raise HTTPException(
+            status_code=500,
+            detail="Paystack secret key not configured"
+        )
 
-        headers = {
-            "Authorization": f"Bearer {PAYSTACK_SECRET_KEY}",
-            "Content-Type": "application/json"
-        }
+    headers = {
+        "Authorization": f"Bearer {PAYSTACK_SECRET_KEY}",
+        "Content-Type": "application/json"
+    }
 
-        response = httpx.get(f"{PAYSTACK_BASE_URL}/transaction/verify/{reference}", headers=headers)
+    response = httpx.get(f"{PAYSTACK_BASE_URL}/transaction/verify/{reference}", headers=headers)
 
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=400,
-                detail="Failed to verify payment"
-            )
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=400,
+            detail="Failed to verify payment"
+        )
 
-        result = response.json()
-        if not result.get("status") or result.get("data", {}).get("status") != "success":
-            raise HTTPException(
-                status_code=400,
-                detail="Payment verification failed"
-            )
+    result = response.json()
+    if not result.get("status") or result.get("data", {}).get("status") != "success":
+        raise HTTPException(
+            status_code=400,
+            detail="Payment verification failed"
+        )
 
-        return result["data"]
+    return result["data"]
