@@ -53,6 +53,7 @@
 </head>
 <body>
   <header>
+  <link rel="icon" type="image/png" href="/logo/s%20and%20s%20collection%20logo.png" />
     <h1>Admin Dashboard</h1>
     <p>Product Requests</p>
   </header>
@@ -79,59 +80,65 @@
     //const baseUrl = "https://s-and-s-collection.onrender.com/api";
     const baseUrl = "http://127.0.0.1:8000/api";
 
-    window.onload = async function () {
-      const token = localStorage.getItem("token");
-      const messageDiv = document.getElementById("message");
-      const table = document.querySelector("table");
-
-      // This check is good. It prevents the code from running without a token.
-      if (!token) {
-        alert("Access denied. Please log in first.");
-        window.location.href = "admin_login.html";
-        return;
-      }
-
-      try {
-        // Here is the changed line:
-        // We now use the 'baseUrl' and the correct API path.
-        const res = await fetch(`${baseUrl}/admin/product-requests`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        if (!res.ok) {
-          // This will catch errors if the token is invalid or expired
-          throw new Error("Token invalid or expired");
-        }
-
-        const data = await res.json();
-        const tbody = document.getElementById("requests-table-body");
-
-        if (data.length === 0) {
-          messageDiv.textContent = "No product requests found.";
-        } else {
-          messageDiv.style.display = "none";
-          table.style.display = "table";
-
-          data.forEach(request => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-              <td>${request.product_name}</td>
-              <td>${request.email}</td>
-              <td>${request.quantity}</td>
-              <td>${request.message}</td>
-            `;
-            tbody.appendChild(row);
+    // 🔒 Check token immediately when page loads (same behavior as upload page)
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Access denied. Please log in first.");
+      window.location.href = "admin_login.html";
+    } else {
+      // load requests
+      (async function loadRequests() {
+        const messageDiv = document.getElementById("message");
+        const table = document.querySelector("table");
+        console.log("admin_productRrequest: token=", token);
+        try {
+          const res = await fetch(`${baseUrl}/product-requests`, {
+            headers: { Authorization: `Bearer ${token}` }
           });
+
+          if (!res.ok) {
+            // try to extract server error detail for debugging
+            let detail = null;
+            try {
+              const json = await res.json();
+              detail = json.detail || JSON.stringify(json);
+            } catch (e) {
+              try { detail = await res.text(); } catch (e2) { detail = String(res.status); }
+            }
+            console.error('Request failed', res.status, detail);
+            alert(`Session expired or unauthorized. Server returned ${res.status}: ${detail}`);
+            localStorage.removeItem("token");
+            window.location.href = "admin_login.html";
+            return;
+          }
+
+          const data = await res.json();
+          const tbody = document.getElementById("requests-table-body");
+
+          if (data.length === 0) {
+            messageDiv.textContent = "No product requests found.";
+          } else {
+            messageDiv.style.display = "none";
+            table.style.display = "table";
+            data.forEach(request => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${request.product_name}</td>
+                <td>${request.email}</td>
+                <td>${request.quantity}</td>
+                <td>${request.message}</td>
+              `;
+              tbody.appendChild(row);
+            });
+          }
+        } catch (error) {
+          console.error('Unexpected error while loading requests', error);
+          alert("Session expired or unauthorized. Please log in again.");
+          localStorage.removeItem("token");
+          window.location.href = "admin_login.html";
         }
-      } catch (error) {
-        // This 'catch' block will handle the expired token error
-        alert("Session expired or unauthorized. Please log in again.");
-        localStorage.removeItem("token");
-        window.location.href = "admin_login.html";
-      }
-    };
+      })();
+    }
   </script>
 </body>
 </html>

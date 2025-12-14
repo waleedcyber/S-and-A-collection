@@ -5,6 +5,8 @@ from models import Order
 from datetime import datetime
 from typing import List, Optional
 from schemas import OrderOut  # Assuming you created this
+from fastapi import Depends, HTTPException
+from auth import get_current_admin
 
 router = APIRouter()
 
@@ -74,5 +76,16 @@ def mark_order_paid_by_code(order_id: str, reference: str, db: Session = Depends
             "paid_at": order.paid_at.isoformat()
         }
     }
+
+
+# ✅ Delete an order (admin-protected)
+@router.delete("/orders/{order_id}")
+def delete_order(order_id: int, db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)):
+    order = db.query(Order).filter(Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    db.delete(order)
+    db.commit()
+    return {"message": "Order deleted"}
 
 

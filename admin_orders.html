@@ -8,6 +8,7 @@
 </head>
 <body class="bg-gray-100 text-sm">
   <div class="max-w-7xl mx-auto px-4 py-6">
+  <link rel="icon" type="image/png" href="/logo/s%20and%20s%20collection%20logo.png" />
     <h1 class="text-2xl font-bold text-center mb-4">📦 All Orders</h1>
 
     <!-- Filter Buttons -->
@@ -83,10 +84,18 @@
     }
 
     async function fetchOrders(status = "") {
-      const phone = document.getElementById('searchPhone').value.trim();
-      let url = "/orders";
-      if (status) url += `?status=${status}`;
-      const res = await fetch(url);
+        // Use API base and include auth header
+        const phone = document.getElementById('searchPhone').value.trim();
+        const baseUrl = "http://127.0.0.1:8000/api";
+        const token = localStorage.getItem("token");
+        if (!token) {
+          alert("Access denied. Please log in.");
+          window.location.href = "admin_login.html";
+          return;
+        }
+        let url = `${baseUrl}/orders`;
+        if (status) url += `?status=${status}`;
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       const orders = await res.json();
 
       const tbody = document.getElementById("orders-table");
@@ -116,13 +125,29 @@
     }
 
     async function markPaid(id) {
-      const res = await fetch(`/orders/${id}/mark-paid`, { method: "POST" });
-      if (res.ok) fetchOrders();
+      const token = localStorage.getItem("token");
+      if (!token) { window.location.href = 'admin_login.html'; return; }
+      try {
+        const res = await fetch(`/api/orders/${id}/mark-paid`, { method: "PATCH", headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) fetchOrders();
+        else throw new Error('Failed');
+      } catch (err) {
+        console.error(err);
+        alert('Failed to mark paid.');
+      }
     }
 
     async function markDelivered(id) {
-      const res = await fetch(`/orders/${id}/mark-delivered`, { method: "POST" });
-      if (res.ok) fetchOrders();
+      const token = localStorage.getItem("token");
+      if (!token) { window.location.href = 'admin_login.html'; return; }
+      try {
+        const res = await fetch(`/api/orders/${id}/mark_delivered`, { method: "PUT", headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) fetchOrders();
+        else throw new Error('Failed');
+      } catch (err) {
+        console.error(err);
+        alert('Failed to mark delivered.');
+      }
     }
 
     function confirmDelete(id) {
@@ -136,11 +161,14 @@
     }
 
     function deleteOrder() {
-      fetch(`/orders/${selectedOrderId}`, { method: 'DELETE' })
+      const token = localStorage.getItem("token");
+      if (!token) { window.location.href = 'admin_login.html'; return; }
+      fetch(`/api/orders/${selectedOrderId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
         .then(res => {
           if (res.ok) fetchOrders();
+          else alert('Failed to delete order.');
           closeModal();
-        });
+        }).catch(err => { console.error(err); alert('Failed to delete order.'); closeModal(); });
     }
 
     fetchOrders();

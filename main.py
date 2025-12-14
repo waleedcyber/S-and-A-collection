@@ -56,11 +56,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan) # Make sure to pass the lifespan here
 app.add_middleware(
     CORSMiddleware,
+    # Keep deployed origin(s) explicit and allow any localhost/127.0.0.1 port for local testing
     allow_origins=[
-        "http://127.0.0.1:5500",  # local testing
-        "http://localhost:5500",  # local alternative
-        "https://s-and-s-collection.onrender.com",  # replace with your deployed frontend domain
+        "https://s-and-s-collection.onrender.com",
     ],
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

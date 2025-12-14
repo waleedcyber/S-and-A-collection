@@ -121,6 +121,60 @@ def delete_product(
     db.commit()
     return {"message": "Product deleted successfully"}
 
+
+@router.get("/admin/products/{product_id}", tags=["Admin"])
+def get_product(product_id: int, db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return product
+
+
+@router.put("/admin/products/{product_id}", tags=["Admin"])
+def update_product(
+    product_id: int,
+    name: str = Form(...),
+    description: str = Form(None),
+    price: float = Form(...),
+    quantity: int = Form(...),
+    category_id: int = Form(...),
+    image: UploadFile = File(None),
+    db: Session = Depends(get_db),
+    admin: dict = Depends(get_current_admin),
+):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    product.name = name
+    product.description = description
+    product.price = price
+    product.quantity = quantity
+    product.category_id = category_id
+
+    # Handle optional image replacement
+    if image is not None:
+        file_ext = os.path.splitext(image.filename)[1]
+        if file_ext.lower() not in [".jpg", ".jpeg", ".png", ".webp"]:
+            raise HTTPException(status_code=400, detail="Invalid image format")
+        unique_filename = f"{uuid4().hex}{file_ext}"
+        file_path = os.path.join(UPLOAD_DIR, unique_filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(image.file, buffer)
+        # attempt to delete old image
+        if product.image_url:
+            old_path = product.image_url.lstrip("/")
+            if os.path.exists(old_path):
+                try:
+                    os.remove(old_path)
+                except Exception:
+                    pass
+        product.image_url = f"/uploads/{unique_filename}"
+
+    db.commit()
+    db.refresh(product)
+    return {"message": "Product updated", "product": product}
+
 @router.post("/admin/categories", status_code=201, tags=["Admin Categories"])
 def create_category(
     category: CategoryCreate,

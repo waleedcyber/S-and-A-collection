@@ -19,6 +19,21 @@
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
+            .about-header{
+                display:flex;
+                align-items:center;
+                gap:16px;
+                justify-content:center;
+            }
+            .about-logo{
+                width:96px;
+                height:96px;
+                object-fit:contain;
+                border-radius:8px;
+                background:white;
+                padding:6px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            }
         h1 {
             color: #ff6b6b;
             text-align: center;
@@ -49,7 +64,11 @@
 </head>
 <body>
     <div class="about-container">
-        <h1>About S&S Collection</h1>
+    <link rel="icon" type="image/png" href="/logo/s%20and%20s%20collection%20logo.png" />
+        <div class="about-header">
+           <img class="about-logo" src="/logo/s%20and%20s%20collection%20logo.png" alt="S&S logo">
+           <h1>About S&S Collection</h1>
+        </div>
         <p>
             Welcome to <strong>S&S Collection</strong>, your trusted destination for a wide variety of quality products at affordable prices. From stylish watches and elegant handbags to handy rice cookers and more, we are committed to making your shopping experience easy and enjoyable.
         </p>
