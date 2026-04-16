@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
+import os
 
 # Local imports
 from database_setup import create_tables
@@ -17,8 +18,8 @@ from models import Admin
 from auth import get_password_hash # Assuming get_password_hash is in auth.py
 
 # --- Configuration for the bootstrap admin ---
-DEFAULT_ADMIN_USERNAME = "waleed"
-DEFAULT_ADMIN_PASSWORD = "wal33d" # IMPORTANT: This password should be strong and ideally not hardcoded in production
+DEFAULT_ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+DEFAULT_ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD") # IMPORTANT: This password should be strong and ideally not hardcoded in production
 # -------------------------------------------
 
 # ✅ Lifespan setup (runs once at startup)
