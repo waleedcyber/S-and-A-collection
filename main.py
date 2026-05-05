@@ -9,6 +9,7 @@ from routes.product import router as product_router
 from routes.admin import router as admin_router
 from routes.product_request import router as product_request_router
 from routes.payment import router as payment_router
+import os
 
 # Import necessary for admin creation
 from sqlalchemy.orm import Session
@@ -17,8 +18,8 @@ from models import Admin
 from auth import get_password_hash # Assuming get_password_hash is in auth.py -- i think i tempered with auth.py so maybe fix it letter if you have the chance 
 
 # --- Configuration for the bootstrap admin ---
-DEFAULT_ADMIN_USERNAME = "waleed"
-DEFAULT_ADMIN_PASSWORD = "wal33d" # IMPORTANT: Change this password in production!
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD") # IMPORTANT: Change this password in production!
 # -------------------------------------------
 
 # ✅ Lifespan setup (runs once at startup)
