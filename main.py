@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
+import os
 
 # Local imports
 from database_setup import create_tables
@@ -9,17 +10,17 @@ from routes.product import router as product_router
 from routes.admin import router as admin_router
 from routes.product_request import router as product_request_router
 from routes.payment import router as payment_router
-import os
 
 # Import necessary for admin creation
 from sqlalchemy.orm import Session
 from db import SessionLocal
 from models import Admin
-from auth import get_password_hash # Assuming get_password_hash is in auth.py -- i think i tempered with auth.py so maybe fix it letter if you have the chance 
+from auth import get_password_hash  # ensure get_password_hash exists in auth.py
 
 # --- Configuration for the bootstrap admin ---
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD") # IMPORTANT: Change this password in production!
+# Read defaults from environment or use sane local defaults for development
+DEFAULT_ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+DEFAULT_ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "changeme")  # change for production
 # -------------------------------------------
 
 # ✅ Lifespan setup (runs once at startup)

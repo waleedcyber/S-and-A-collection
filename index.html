@@ -214,7 +214,12 @@
     });
 
     function fetchRandomProducts() {
-      const apiUrl = '/api/products/random';
+      // Production URL (uncomment when deploying)
+      // const apiUrl = 'https://your-production-url.com/api/products';
+      
+      // Local development URL (comment out for production)
+      const apiUrl = 'http://127.0.0.1:8000/api/products';
+      
       const showcase = document.getElementById('productShowcase');
 
       fetch(apiUrl)
@@ -251,28 +256,4 @@
     function openModal(product) {
       const modal = document.getElementById('productModal');
       const modalBody = document.getElementById('modalBody');
-      // Build modal content safely
-      const img = product.image_url ? `<img src="${product.image_url}" alt="${product.name}">` : '';
-      const price = product.price ? `<p><strong>Price:</strong> ₦${product.price}</p>` : '';
-      modalBody.innerHTML = `
-        ${img}
-        <h2>${product.name}</h2>
-        <p>${product.description || ''}</p>
-        ${price}
-      `;
-      modal.style.display = 'flex';
-    }
-
-    function closeModal() {
-      const modal = document.getElementById('productModal');
-      modal.style.display = 'none';
-    }
-
-    // Close modal when clicking outside the content
-    window.addEventListener('click', (e) => {
-      const modal = document.getElementById('productModal');
-      if (e.target === modal) closeModal();
-    });
-  </script>
-</body>
-</html>
+      modalBody.innerHTML

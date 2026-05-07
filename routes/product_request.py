@@ -65,7 +65,7 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db)):
 @router.get("/orders", response_model=List[OrderOut])
 def get_all_orders(db: Session = Depends(get_db)):
     orders = db.query(Order).all()
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()  # Use naive datetime to match stored timestamps
     output = []
     for order in orders:
         delta = now - order.timestamp
