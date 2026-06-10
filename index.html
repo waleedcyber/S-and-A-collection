@@ -256,4 +256,27 @@
     function openModal(product) {
       const modal = document.getElementById('productModal');
       const modalBody = document.getElementById('modalBody');
-      modalBody.innerHTML
+      modalBody.innerHTML = `
+        <h2>${product.name}</h2>
+        <img src="${product.image_url || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${product.name}" style="width:100%; border-radius: 8px;">
+        <p><strong>Price:</strong> ₦${product.price}</p>
+        <p><strong>Description:</strong> ${product.description}</p>
+        <p><strong>Stock:</strong> ${product.quantity} available</p>
+        <button onclick="addToCart(${product.id}, '${product.name}', ${product.price})" style="background: #ff6b6b; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; width: 100%;">Add to Cart</button>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('productModal');
+      modal.style.display = 'none';
+    }
+
+    function addToCart(productId, productName, price) {
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      cart.push({ id: productId, name: productName, price: price, quantity: 1 });
+      localStorage.setItem('cart', JSON.stringify(cart));
+      alert('Added to cart!');
+      closeModal();
+    }
+  </script>
