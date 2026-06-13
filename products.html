@@ -378,8 +378,8 @@ select {
 
 
 <script>
-  // ✅ Set this once, switch between dev and prod easily
-  //const baseUrl = "http://127.0.0.1:8000/api";
+  // Use production API base for deployed builds.
+  // previously: const baseUrl = "http://127.0.0.1:8000/api" or injected window.__API_BASE__
   const baseUrl = "https://s-and-s-collection.onrender.com/api";
 
   const categorySelect = document.getElementById('category');

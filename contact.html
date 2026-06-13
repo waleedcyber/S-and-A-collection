@@ -136,9 +136,29 @@
     </div>
   </div>
 
-  <footer>
-    <p>© 2026 IBY Alpha Tech. All rights reserved.</p>
+  <!-- Unified footer: added by update to include privacy link and contact quick links -->
+  <footer style="background:#111827;color:#f3f4f6;padding:24px 12px;margin-top:24px;text-align:center;">
+    <div style="max-width:1000px;margin:0 auto;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;">
+      <div style="flex:1;min-width:200px;text-align:left;color:#e5e7eb;">
+        <strong>S&S Collection</strong>
+        <div style="font-size:14px;color:#9ca3af;margin-top:6px;">Quality products at friendly prices — serving customers across Nigeria.</div>
+      </div>
+      <div style="flex:1;min-width:200px;text-align:center;color:#e5e7eb;">
+        <a href="/about.html" style="color:#9ca3af;text-decoration:none;margin-right:12px;">About</a>
+        <a href="/contact.html" style="color:#9ca3af;text-decoration:none;margin-right:12px;">Contact</a>
+        <a href="/privacy.html" style="color:#9ca3af;text-decoration:none;">Privacy</a>
+      </div>
+      <div style="flex:1;min-width:200px;text-align:right;color:#9ca3af;">
+        © 2026 S&S Collection
+      </div>
+    </div>
   </footer>
+
+  <script>
+    // Production API base (added)
+    // previously no base; other pages used window.__API_BASE__ || '/api'
+    const baseUrl = "https://s-and-s-collection.onrender.com/api";
+  </script>
 
   <script>
     document.getElementById('contactForm').addEventListener('submit', function(e) {

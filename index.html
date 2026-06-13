@@ -214,11 +214,10 @@
     });
 
     function fetchRandomProducts() {
-      // Production URL (uncomment when deploying)
-      // const apiUrl = 'https://your-production-url.com/api/products';
-      
-  // Local development URL (comment out for production)
-  const apiUrl = (window.__API_BASE__ || '/api') + '/products';
+      // Use a single production API base here for deployed builds.
+      // previously: (window.__API_BASE__ || '/api')
+      const baseUrl = "https://s-and-s-collection.onrender.com/api"; // previously: (window.__API_BASE__ || '/api')
+      const apiUrl = baseUrl + '/products';
       
       const showcase = document.getElementById('productShowcase');
 
