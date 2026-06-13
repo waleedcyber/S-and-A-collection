@@ -65,7 +65,7 @@ class ProductRequestSchema(BaseModel):
     message: Optional[str]
     model_config = {"from_attributes": True}
 
-class ProductRequestResponseSchema(BASEModel):
+class ProductRequestResponseSchema(BaseModel):
     id: int
     product_id: int
     customer_name: str
