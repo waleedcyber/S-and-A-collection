@@ -62,6 +62,7 @@ app.add_middleware(
     CORSMiddleware,
     # Keep deployed origin(s) explicit and allow any localhost/127.0.0.1 port for local testing
     allow_origins=[
+        "https://s-and-s-collection-32bh.onrender.com",
         "https://s-and-s-collection.onrender.com",
     ],
     allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
