@@ -3,48 +3,109 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shopping Cart - Anty Sa'a Store</title>
+  <link rel="icon" type="image/png" href="/logo/s%20and%20s%20collection%20logo.png" />
+  <title>Shopping Cart - S&S Collection</title>
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
       background-color: #f8f8f8;
     }
 
     header {
-      background-color: #ff6b6b;
+      background: linear-gradient(135deg, #ff6b6b, #ff4b4b);
       color: white;
-      padding: 20px;
+      padding: 18px 20px;
       text-align: center;
       position: sticky;
       top: 0;
       z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
+
+    header h1 {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .back-link {
+      color: rgba(255,255,255,0.85);
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    .back-link:hover { color: white; }
 
     .cart-container {
-      max-width: 800px;
-      margin: 30px auto;
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 700px;
+      margin: 24px auto;
+      padding: 0 12px;
     }
 
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 60px;
+      margin-bottom: 16px;
+    }
+
+    .empty-state h2 {
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      color: #888;
+      margin-bottom: 20px;
+    }
+
+    .shop-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff6b6b, #ff4b4b);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .shop-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(255,75,75,0.35);
+    }
+
+    /* Cart item */
     .cart-item {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 15px;
+      gap: 14px;
+      background: white;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      transition: box-shadow 0.2s;
+    }
+
+    .cart-item:hover {
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
     }
 
     .cart-item img {
-      width: 60px;
-      height: 60px;
+      width: 70px;
+      height: 70px;
       object-fit: cover;
-      border-radius: 8px;
-      margin-right: 15px;
+      border-radius: 10px;
+      flex-shrink: 0;
     }
 
     .cart-item-details {
@@ -52,170 +113,214 @@
     }
 
     .cart-item-details h4 {
-      margin: 0;
-      font-size: 16px;
+      font-size: 15px;
+      color: #222;
+      margin-bottom: 4px;
     }
 
-    .cart-item-details p {
-      margin: 5px 0;
-      color: #666;
+    .item-price {
+      font-size: 15px;
+      font-weight: bold;
+      color: #ff4b4b;
+      margin-bottom: 8px;
     }
 
     .quantity-controls {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
-    .quantity-btn {
-      padding: 5px 10px;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 6px;
+    .qty-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
       border: none;
-      background-color: #ddd;
+      background: #f0f0f0;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      line-height: 1;
+    }
+
+    .qty-btn:hover { background: #ddd; }
+
+    .qty-value {
+      font-size: 16px;
+      font-weight: bold;
+      min-width: 20px;
+      text-align: center;
     }
 
     .remove-btn {
-      background-color: #ff4d4d;
+      background: none;
       border: none;
-      color: white;
-      padding: 8px 12px;
-      border-radius: 6px;
+      font-size: 20px;
       cursor: pointer;
+      color: #ccc;
+      flex-shrink: 0;
+      transition: color 0.2s, transform 0.2s;
+      padding: 4px;
     }
 
     .remove-btn:hover {
-      background-color: #e60000;
+      color: #ff4b4b;
+      transform: scale(1.2);
     }
 
-    .empty-msg {
-      text-align: center;
-      font-size: 18px;
-      color: #777;
-      margin-top: 40px;
-    }
-
+    /* Summary */
     .cart-summary {
-      margin-top: 20px;
-      border-top: 1px solid #ddd;
-      padding-top: 15px;
-      text-align: right;
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
 
-    .cart-summary h3 {
-      margin: 0;
-      font-size: 18px;
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 15px;
+      color: #555;
     }
 
-    .button {
-  padding: 12px 20px;
-  background: #2d89ef;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-  margin: 10px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.button:hover {
-  background: #1b5cb8;
-}
-
-.floating-checkout {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #28a745;
-  color: white;
-  padding: 14px 20px;
-  border-radius: 50px;
-  font-weight: bold;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  transition: background 0.3s ease;
-  z-index: 100;
-}
-
-.floating-checkout:hover {
-  background: #218838;
-}
-
+    .summary-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 20px;
+      font-weight: bold;
+      color: #222;
+      border-top: 1px solid #f0f0f0;
+      padding-top: 14px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
 
     .checkout-btn {
-      margin-top: 15px;
-      padding: 12px 20px;
-      background-color: #28a745;
+      display: block;
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #28a745, #218838);
       color: white;
       border: none;
-      border-radius: 8px;
-      font-size: 16px;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: bold;
       cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-align: center;
+      text-decoration: none;
     }
 
     .checkout-btn:hover {
-      background-color: #218838;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(40,167,69,0.35);
+    }
+
+    .clear-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: white;
+      color: #ff4b4b;
+      border: 2px solid #ff4b4b;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .clear-btn:hover {
+      background: #ff4b4b;
+      color: white;
+    }
+
+    .item-subtotal {
+      font-size: 12px;
+      color: #999;
     }
   </style>
 </head>
 <body>
+
   <header>
-  <link rel="icon" type="image/png" href="/logo/s%20and%20s%20collection%20logo.png" />
-    <h1>Your Shopping Cart</h1>
+    <h1>🛒 Your Cart</h1>
+    <a class="back-link" href="products.html">← Continue Shopping</a>
   </header>
 
-  <div class="cart-container" id="cartContainer">
-    <!-- Cart items will be displayed here -->
-  </div>
-  <a href="checkout.html"><button class="button">Proceed to Checkout ➡️</button></a>
+  <div class="cart-container" id="cartContainer"></div>
 
   <script>
-    const cartContainer = document.getElementById('cartContainer');
-
     function renderCart() {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      cartContainer.innerHTML = '';
+      const container = document.getElementById('cartContainer');
+      container.innerHTML = '';
 
       if (cart.length === 0) {
-        cartContainer.innerHTML = '<p class="empty-msg">🛒 Your cart is empty.</p>';
-        updateCartCount();
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🛍️</div>
+            <h2>Your cart is empty</h2>
+            <p>Looks like you haven't added anything yet.</p>
+            <a href="products.html" class="shop-btn">Browse Products</a>
+          </div>`;
         return;
       }
 
       let total = 0;
+      let totalItems = 0;
 
       cart.forEach((item, index) => {
-        total += item.price * (item.quantity || 1);
+        const qty = item.quantity || 1;
+        const subtotal = item.price * qty;
+        total += subtotal;
+        totalItems += qty;
 
         const div = document.createElement('div');
         div.className = 'cart-item';
         div.innerHTML = `
-          <img src="${item.image_url || 'https://via.placeholder.com/60'}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/60';" />
+          <img src="${item.image_url || 'https://via.placeholder.com/70'}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/70';" />
           <div class="cart-item-details">
             <h4>${item.name}</h4>
-            <p>₦${item.price}</p>
+            <p class="item-price">₦${item.price.toLocaleString()}</p>
             <div class="quantity-controls">
-              <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">−</button>
-              <span>${item.quantity || 1}</span>
-              <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
+              <button class="qty-btn" onclick="updateQuantity(${index}, -1)">−</button>
+              <span class="qty-value">${qty}</span>
+              <button class="qty-btn" onclick="updateQuantity(${index}, 1)">+</button>
             </div>
+            <p class="item-subtotal">Subtotal: ₦${subtotal.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
           </div>
-          <button class="remove-btn" onclick="removeFromCart(${index})">Remove</button>
+          <button class="remove-btn" onclick="removeFromCart(${index})" title="Remove">🗑️</button>
         `;
-        cartContainer.appendChild(div);
+        container.appendChild(div);
       });
 
+      // Summary
       const summary = document.createElement('div');
       summary.className = 'cart-summary';
       summary.innerHTML = `
-        <h3>Total: ₦${total}</h3>
-        <button class="checkout-btn" onclick="goToCheckout()">Proceed to Checkout</button>
+        <div class="summary-row">
+          <span>Items (${totalItems})</span>
+          <span>₦${total.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+        </div>
+        <div class="summary-row">
+          <span>Delivery</span>
+          <span style="color:#28a745;">Calculated at checkout</span>
+        </div>
+        <div class="summary-total">
+          <span>Total</span>
+          <span>₦${total.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+        </div>
+        <a href="checkout.html" class="checkout-btn">Proceed to Checkout →</a>
+        <button class="clear-btn" onclick="clearCart()">🗑️ Clear Cart</button>
       `;
-      cartContainer.appendChild(summary);
-
-      updateCartCount();
+      container.appendChild(summary);
     }
 
     function removeFromCart(index) {
@@ -235,23 +340,14 @@
       renderCart();
     }
 
-    function updateCartCount() {
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      let count = 0;
-      cart.forEach(item => {
-        count += item.quantity || 1;
-      });
-
-      const icon = document.getElementById('cartCount');
-      if (icon) icon.innerText = count;
-    }
-
-    function goToCheckout() {
-      window.location.href = 'checkout.html';
+    function clearCart() {
+      if (confirm('Clear your entire cart?')) {
+        localStorage.removeItem('cart');
+        renderCart();
+      }
     }
 
     renderCart();
   </script>
 </body>
 </html>
-
