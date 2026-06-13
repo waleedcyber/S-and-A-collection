@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import os
+from fastapi.responses import FileResponse
+from fastapi.exceptions import HTTPException as StarletteHTTPException
 
 # Local imports
 from database_setup import create_tables
@@ -74,6 +76,12 @@ def get_db():
         yield db
     finally:
         db.close()
+        
+@app.exception_handler(StarletteHTTPException)
+async def custom_404_handler(request, exc):
+    if exc.status_code == 404:
+        return FileResponse("404.html")
+    raise exc
 
 
 # ✅ Include routers under /api
@@ -85,3 +93,8 @@ app.include_router(payment_router, prefix="/api", tags=["Payments"])
 # ✅ Static files
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.mount("/", StaticFiles(directory=".", html=True), name="root")
+@app.exception_handler(StarletteHTTPException)
+async def custom_404_handler(request, exc):
+    if exc.status_code == 404:
+        return FileResponse("404.html")
+    raise exc
