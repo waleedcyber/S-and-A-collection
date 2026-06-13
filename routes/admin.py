@@ -7,36 +7,34 @@ from schemas import ProductRequestResponseSchema, CategoryCreate
 from models import Admin
 from auth import get_current_admin
 from auth import verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
-from uuid import uuid4
-import os
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 from typing import List
-import shutil
+import cloudinary
+import cloudinary.uploader
+import os
 
 router = APIRouter()
 
-UPLOAD_DIR = "uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+# Cloudinary config
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+)
 
 
 @router.post("/admin/login")
 def admin_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    # 1. Find admin in DB
     admin = db.query(Admin).filter(Admin.username == form_data.username).first()
     if not admin:
         raise HTTPException(status_code=400, detail="Invalid username or password")
-
-    # 2. Verify password
     if not verify_password(form_data.password, admin.password):
         raise HTTPException(status_code=400, detail="Invalid username or password")
 
-
-    # 3. Create JWT token
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": admin.username}, expires_delta=access_token_expires
     )
-
     return {"access_token": access_token, "token_type": "bearer"}
 
 
@@ -51,22 +49,22 @@ def upload_product(
     db: Session = Depends(get_db),
     admin: dict = Depends(get_current_admin),
 ):
-    """
-    Upload a new product.
-
-    This endpoint is protected and can only be accessed by an admin.
-    """
-    file_ext = os.path.splitext(image.filename)[1]
-    if file_ext.lower() not in [".jpg", ".jpeg", ".png", ".webp"]:
+    # Validate image format
+    file_ext = os.path.splitext(image.filename)[1].lower()
+    if file_ext not in [".jpg", ".jpeg", ".png", ".webp"]:
         raise HTTPException(status_code=400, detail="Invalid image format")
 
-    unique_filename = f"{uuid4().hex}{file_ext}"
-    file_path = os.path.join(UPLOAD_DIR, unique_filename)
-
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(image.file, buffer)
-
-    image_url = f"/uploads/{unique_filename}"
+    # Upload to Cloudinary
+    try:
+        result = cloudinary.uploader.upload(
+            image.file,
+            folder="s_and_s_collection",  # organizes uploads in a folder
+            resource_type="image",
+        )
+        image_url = result["secure_url"]
+        public_id = result["public_id"]  # save this to delete later
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
 
     product = Product(
         name=name,
@@ -75,6 +73,7 @@ def upload_product(
         quantity=quantity,
         category_id=category_id,
         image_url=image_url,
+        cloudinary_public_id=public_id,  # store for deletion
     )
     db.add(product)
     db.commit()
@@ -84,16 +83,8 @@ def upload_product(
 
 
 @router.get("/admin/products", tags=["Admin"])
-def get_all_products(
-    db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)
-):
-    """
-    Get all products.
-
-    This endpoint is protected and can only be accessed by an admin.
-    """
-    products = db.query(Product).all()
-    return products
+def get_all_products(db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)):
+    return db.query(Product).all()
 
 
 @router.delete("/admin/products/{product_id}", status_code=204, tags=["Admin"])
@@ -102,20 +93,16 @@ def delete_product(
     db: Session = Depends(get_db),
     admin: dict = Depends(get_current_admin),
 ):
-    """
-    Delete a product by its ID.
-
-    This endpoint is protected and can only be accessed by an admin.
-    """
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    # Delete the image file from the server
-    if product.image_url:
-        file_path = product.image_url.lstrip("/")  # Remove leading slash
-        if os.path.exists(file_path):
-            os.remove(file_path)
+    # Delete image from Cloudinary
+    if product.cloudinary_public_id:
+        try:
+            cloudinary.uploader.destroy(product.cloudinary_public_id)
+        except Exception:
+            pass  # don't block deletion if Cloudinary call fails
 
     db.delete(product)
     db.commit()
@@ -152,28 +139,34 @@ def update_product(
     product.quantity = quantity
     product.category_id = category_id
 
-    # Handle optional image replacement
     if image is not None:
-        file_ext = os.path.splitext(image.filename)[1]
-        if file_ext.lower() not in [".jpg", ".jpeg", ".png", ".webp"]:
+        file_ext = os.path.splitext(image.filename)[1].lower()
+        if file_ext not in [".jpg", ".jpeg", ".png", ".webp"]:
             raise HTTPException(status_code=400, detail="Invalid image format")
-        unique_filename = f"{uuid4().hex}{file_ext}"
-        file_path = os.path.join(UPLOAD_DIR, unique_filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-        # attempt to delete old image
-        if product.image_url:
-            old_path = product.image_url.lstrip("/")
-            if os.path.exists(old_path):
-                try:
-                    os.remove(old_path)
-                except Exception:
-                    pass
-        product.image_url = f"/uploads/{unique_filename}"
+
+        # Delete old image from Cloudinary
+        if product.cloudinary_public_id:
+            try:
+                cloudinary.uploader.destroy(product.cloudinary_public_id)
+            except Exception:
+                pass
+
+        # Upload new image
+        try:
+            result = cloudinary.uploader.upload(
+                image.file,
+                folder="s_and_s_collection",
+                resource_type="image",
+            )
+            product.image_url = result["secure_url"]
+            product.cloudinary_public_id = result["public_id"]
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
 
     db.commit()
     db.refresh(product)
     return {"message": "Product updated", "product": product}
+
 
 @router.post("/admin/categories", status_code=201, tags=["Admin Categories"])
 def create_category(
@@ -181,11 +174,6 @@ def create_category(
     db: Session = Depends(get_db),
     admin: dict = Depends(get_current_admin),
 ):
-    """
-    Create a new category.
-
-    This endpoint is protected and can only be accessed by an admin.
-    """
     existing = db.query(Category).filter(Category.name == category.name).first()
     if existing:
         raise HTTPException(status_code=400, detail="Category already exists")
@@ -193,23 +181,11 @@ def create_category(
     db.add(new_category)
     db.commit()
     db.refresh(new_category)
-    return {
-        "message": "Category created",
-        "category": {"id": new_category.id, "name": new_category.name},
-    }
-
-
+    return {"message": "Category created", "category": {"id": new_category.id, "name": new_category.name}}
 
 
 @router.get("/admin/categories", tags=["Admin Categories"])
-def list_categories(
-    db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)
-):
-    """
-    Get all categories.
-
-    This endpoint is protected and can only be accessed by an admin.
-    """
+def list_categories(db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)):
     categories = db.query(Category).all()
     return [{"id": c.id, "name": c.name} for c in categories]
 
@@ -221,11 +197,6 @@ def update_category(
     db: Session = Depends(get_db),
     admin: dict = Depends(get_current_admin),
 ):
-    """
-    Update a category by its ID.
-
-    This endpoint is protected and can only be accessed by an admin.
-    """
     cat = db.query(Category).filter(Category.id == category_id).first()
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
@@ -241,11 +212,6 @@ def delete_category(
     db: Session = Depends(get_db),
     admin: dict = Depends(get_current_admin),
 ):
-    """
-    Delete a category by its ID.
-
-    This endpoint is protected and can only be accessed by an admin.
-    """
     cat = db.query(Category).filter(Category.id == category_id).first()
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
@@ -256,39 +222,29 @@ def delete_category(
 
 @router.get("/products/random", tags=["Products"])
 def get_random_products(db: Session = Depends(get_db)):
-    """
-    Get a list of all products.
-    """
     products = db.query(Product).all()
-    return products
+    return [
+        {
+            "id": p.id,
+            "name": p.name,
+            "price": p.price,
+            "quantity": p.quantity,
+            "description": p.description,
+            "image_url": p.image_url,
+        }
+        for p in products
+    ]
 
 
-@router.get(
-    "/product-requests",
-    response_model=List[ProductRequestResponseSchema],
-    tags=["Admin"],
-)
-def get_all_product_requests(
-    db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)
-):
-    """
-    Get all product requests.
-
-    This endpoint is protected and can only be accessed by an admin.
-    """
-    requests = db.query(ProductRequest).all()
-    return requests
+@router.get("/product-requests", response_model=List[ProductRequestResponseSchema], tags=["Admin"])
+def get_all_product_requests(db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)):
+    return db.query(ProductRequest).all()
 
 
 @router.put("/orders/{order_id}/mark_paid", tags=["Admin"])
 def mark_order_paid(
     order_id: int, db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)
 ):
-    """
-    Mark an order as paid.
-
-    This endpoint is protected and can only be accessed by an admin.
-    """
     order = db.query(Order).get(order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -303,30 +259,9 @@ def mark_order_paid(
 def mark_order_delivered(
     order_id: int, db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)
 ):
-    """
-    Mark an order as delivered.
-
-    This endpoint is protected and can only be accessed by an admin.
-    """
     order = db.query(Order).get(order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     order.status = "Delivered"
     db.commit()
     return {"message": "Marked as delivered"}
-    
-
-@router.get("/products/random")
-def get_random_products(db: Session = Depends(get_db)):
-    products = db.query(Product).all()
-    return [
-        {
-            "id": product.id,
-            "name": product.name,
-            "price": product.price,
-            "quantity": product.quantity,
-            "description": product.description,
-            "image_url": product.image_url
-        }
-        for product in products
-    ]

@@ -225,8 +225,8 @@
 
         try {
           // First create the order
-          //const response = await fetch('http://127.0.0.1:8000/api/orders'
-          const response = await fetch('https://marital-curable-roping.ngrok-free.dev/api/orders', {
+          //const response = await fetch('/api/orders'
+          const response = await fetch((window.__API_BASE__ || '/api') + '/orders', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -249,7 +249,7 @@
           const orderId = result?.order?.order_id || result?.order_id || 'N/A';
           
           // Initialize payment server-side so we can set callback_url and metadata
-          const initRes = await fetch('https://marital-curable-roping.ngrok-free.dev/api/payments/initialize', {
+          const initRes = await fetch((window.__API_BASE__ || '/api') + '/payments/initialize', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: orderData.email, amount: orderData.total, order_id: orderId })

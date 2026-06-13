@@ -217,8 +217,8 @@
       // Production URL (uncomment when deploying)
       // const apiUrl = 'https://your-production-url.com/api/products';
       
-      // Local development URL (comment out for production)
-      const apiUrl = 'http://127.0.0.1:8000/api/products';
+  // Local development URL (comment out for production)
+  const apiUrl = (window.__API_BASE__ || '/api') + '/products';
       
       const showcase = document.getElementById('productShowcase');
 

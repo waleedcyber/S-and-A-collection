@@ -76,9 +76,9 @@
 
   <script>
     // Change this depending on environment
-    //const baseUrl = "http://127.0.0.1:8000/api";
-    //const baseUrl = "https://s-and-s-collection.onrender.com/api";
-    const baseUrl = "http://127.0.0.1:8000/api";
+  // Replaced previous base: window.__API_BASE__ || '/api'
+  // Now using production API base
+  const baseUrl = "https://s-and-s-collection.onrender.com/api"; // previously: window.__API_BASE__ || '/api'
 
     // 🔒 Check token immediately when page loads (same behavior as upload page)
     const token = localStorage.getItem("token");

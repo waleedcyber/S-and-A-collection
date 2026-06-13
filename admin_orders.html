@@ -84,9 +84,10 @@
     }
 
     async function fetchOrders(status = "") {
-        // Use API base and include auth header
-        const phone = document.getElementById('searchPhone').value.trim();
-        const baseUrl = "http://127.0.0.1:8000/api";
+  // Replaced previous base: window.__API_BASE__ || '/api'
+  // Now using production API base
+  const phone = document.getElementById('searchPhone').value.trim();
+  const baseUrl = "https://s-and-s-collection.onrender.com/api"; // previously: window.__API_BASE__ || '/api'
         const token = localStorage.getItem("token");
         if (!token) {
           alert("Access denied. Please log in.");

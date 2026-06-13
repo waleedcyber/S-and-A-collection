@@ -80,7 +80,9 @@ def initialize_payment(payload: InitializeRequest):
     Returns authorization_url that the frontend can redirect the user to, or the access_token
     for inline transactions.
     """
-    callback_url = os.getenv("PAYSTACK_CALLBACK_URL") or "http://127.0.0.1:5500/order-success.html"
+    callback_url = os.getenv("PAYSTACK_CALLBACK_URL")
+    if not callback_url:
+        raise HTTPException(status_code=500, detail="PAYSTACK_CALLBACK_URL not configured in environment")
 
     headers = {
         "Authorization": f"Bearer {PAYSTACK_SECRET_KEY}",

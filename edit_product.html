@@ -47,7 +47,7 @@
   <script>
     const token = localStorage.getItem('token');
     if (!token) { alert('Access denied. Please log in.'); window.location.href='admin_login.html'; }
-    const baseUrl = 'http://127.0.0.1:8000/api';
+  const baseUrl = window.__API_BASE__ || '/api';
 
     function qs(param){
       const params = new URLSearchParams(window.location.search);

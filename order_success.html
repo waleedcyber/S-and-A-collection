@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Confirmed - S&S Collection</title>
+  <link rel="icon" type="image/png" href="/logo/s%20and%20s%20collection%20logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #fff5f5 0%, #fff0f6 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+      padding: 40px 30px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      animation: popIn 0.5s ease;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to   { opacity: 1; transform: scale(1)   translateY(0); }
+    }
+
+    .checkmark {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #ff6b6b, #ff4b4b);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 36px;
+      box-shadow: 0 8px 20px rgba(255, 75, 75, 0.35);
+      animation: bounce 0.6s 0.3s ease both;
+    }
+
+    @keyframes bounce {
+      0%   { transform: scale(0); }
+      60%  { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    h1 {
+      font-size: 1.6em;
+      color: #222;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #777;
+      font-size: 0.95em;
+      margin-bottom: 25px;
+      line-height: 1.6;
+    }
+
+    .order-ref {
+      background: #fff5f5;
+      border: 1px dashed #ffb3b3;
+      border-radius: 10px;
+      padding: 14px 20px;
+      margin-bottom: 25px;
+      font-size: 0.9em;
+      color: #555;
+    }
+
+    .order-ref span {
+      display: block;
+      font-weight: 700;
+      font-size: 1.1em;
+      color: #ff4b4b;
+      margin-top: 4px;
+      letter-spacing: 1px;
+    }
+
+    .perks {
+      display: flex;
+      justify-content: space-around;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .perk {
+      flex: 1;
+      background: #fafafa;
+      border-radius: 12px;
+      padding: 14px 8px;
+      font-size: 0.78em;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .perk .icon {
+      font-size: 1.6em;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #f0f0f0;
+      margin: 0 0 24px;
+    }
+
+    .promo-box {
+      background: linear-gradient(135deg, #ff6b6b, #ff4b4b);
+      border-radius: 12px;
+      padding: 18px 20px;
+      color: white;
+      margin-bottom: 25px;
+    }
+
+    .promo-box p {
+      font-size: 0.88em;
+      opacity: 0.9;
+      margin-bottom: 6px;
+    }
+
+    .promo-box strong {
+      font-size: 1.05em;
+      display: block;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn {
+      display: block;
+      padding: 13px 20px;
+      border-radius: 10px;
+      font-size: 0.95em;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ff6b6b, #ff4b4b);
+      color: white;
+      border: none;
+    }
+
+    .btn-outline {
+      background: white;
+      color: #ff4b4b;
+      border: 2px solid #ff4b4b;
+    }
+
+    .footer-note {
+      margin-top: 24px;
+      font-size: 0.78em;
+      color: #aaa;
+      line-height: 1.6;
+    }
+
+    .footer-note a {
+      color: #ff6b6b;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+
+    <div class="checkmark">✓</div>
+
+    <h1>Order Confirmed! 🎉</h1>
+    <p class="subtitle">
+      Thank you for shopping with <strong>S&S Collection</strong>.<br>
+      Your payment was received and your order is being prepared.
+    </p>
+
+    <div class="order-ref">
+      Your Order Reference
+      <span id="orderRef">—</span>
+    </div>
+
+    <div class="perks">
+      <div class="perk">
+        <span class="icon">🚚</span>
+        Fast Delivery to your door
+      </div>
+      <div class="perk">
+        <span class="icon">🔒</span>
+        Secure & Trusted checkout
+      </div>
+      <div class="perk">
+        <span class="icon">💬</span>
+        Support always available
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="promo-box">
+      <p>Come back and shop more — new arrivals weekly!</p>
+      <strong>Explore our latest collections 👇</strong>
+    </div>
+
+    <div class="btn-group">
+      <a href="products.html" class="btn btn-primary">🛍️ Continue Shopping</a>
+      <a href="index.html" class="btn btn-outline">🏠 Back to Home</a>
+    </div>
+
+    <p class="footer-note">
+      Questions about your order? <a href="contact.html">Contact us</a> and we'll sort it out.<br>
+      We appreciate your trust in us. 💛
+    </p>
+
+  </div>
+
+  <script>
+    // Pull order reference from URL e.g. /order_success.html?ref=TRX_ABC123
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('reference') || params.get('ref') || params.get('trxref');
+    if (ref) {
+      document.getElementById('orderRef').textContent = ref;
+    } else {
+      document.getElementById('orderRef').textContent = 'Processing...';
+    }
+
+    // Clear cart after successful order
+    localStorage.removeItem('cart');
+  </script>
+
+</body>
+</html>

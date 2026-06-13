@@ -85,8 +85,9 @@
   </div>
 
   <script>
-    //const baseUrl = "https://s-and-s-collection.onrender.com/api";
-    const baseUrl = "http://127.0.0.1:8000/api";
+  // Replaced previous base: window.__API_BASE__ || '/api'
+  // Now using production API base
+  const baseUrl = "https://s-and-s-collection.onrender.com/api"; // previously: window.__API_BASE__ || '/api'
 
     // When form is submitted
     document.getElementById("productForm").addEventListener("submit", async function(e) {
