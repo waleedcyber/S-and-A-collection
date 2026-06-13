@@ -54,6 +54,8 @@
   </style>
 
 <script>
+document.addEventListener("DOMContentLoaded", function() {
+
   const token = localStorage.getItem("token");
   if (!token) {
     alert("Access denied. Please log in first.");
@@ -62,7 +64,6 @@
 
   const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api";
 
-  // Fetch categories as checkboxes
   async function fetchCategories() {
     const res = await fetch(`${baseUrl}/admin/categories`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -81,13 +82,11 @@
     }
   }
 
-  // Form submit
   document.getElementById("productForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
     const formData = new FormData(this);
 
-    // Collect checked categories as comma-separated string
     const checked = document.querySelectorAll('#categoryCheckboxes input[type=checkbox]:checked');
     const selectedIds = Array.from(checked).map(c => c.value).join(',');
 
@@ -110,7 +109,6 @@
       msg.style.color = "green";
       msg.textContent = "Product uploaded successfully!";
       this.reset();
-      // uncheck all checkboxes after reset
       document.querySelectorAll('#categoryCheckboxes input[type=checkbox]').forEach(cb => cb.checked = false);
     } else {
       const data = await res.json();
@@ -120,6 +118,8 @@
   });
 
   fetchCategories();
+
+}); // end DOMContentLoaded
 </script>
 </body>
 </html>
