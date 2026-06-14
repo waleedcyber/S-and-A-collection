@@ -8,7 +8,7 @@ from models import Admin
 from auth import get_current_admin
 from auth import verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Optional
 import cloudinary
 import cloudinary.uploader
 import os
@@ -44,7 +44,7 @@ def upload_product(
     description: str = Form(...),
     price: float = Form(...),
     quantity: int = Form(...),
-    category_id: int = Form(...),
+    category_ids: str = Form(...),  # comma-separated e.g. "1,2,3"
     image: UploadFile = File(...),
     db: Session = Depends(get_db),
     admin: dict = Depends(get_current_admin),
@@ -54,37 +54,74 @@ def upload_product(
     if file_ext not in [".jpg", ".jpeg", ".png", ".webp"]:
         raise HTTPException(status_code=400, detail="Invalid image format")
 
+    # Parse category IDs
+    try:
+        ids = [int(i.strip()) for i in category_ids.split(",") if i.strip()]
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid category IDs")
+
+    if not ids:
+        raise HTTPException(status_code=400, detail="Please select at least one category")
+
+    # Fetch category objects
+    categories = db.query(Category).filter(Category.id.in_(ids)).all()
+    if not categories:
+        raise HTTPException(status_code=400, detail="No valid categories found")
+
     # Upload to Cloudinary
     try:
         result = cloudinary.uploader.upload(
             image.file,
-            folder="s_and_s_collection",  # organizes uploads in a folder
+            folder="s_and_s_collection",
             resource_type="image",
         )
         image_url = result["secure_url"]
-        public_id = result["public_id"]  # save this to delete later
+        public_id = result["public_id"]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
 
+    # Create product with many-to-many categories
     product = Product(
         name=name,
         description=description,
         price=price,
         quantity=quantity,
-        category_id=category_id,
         image_url=image_url,
-        cloudinary_public_id=public_id,  # store for deletion
+        cloudinary_public_id=public_id,
+        categories=categories,  # ✅ assign list of category objects
     )
     db.add(product)
     db.commit()
     db.refresh(product)
 
-    return {"message": "Product uploaded successfully", "product": product}
+    return {
+        "message": "Product uploaded successfully",
+        "product": {
+            "id": product.id,
+            "name": product.name,
+            "price": product.price,
+            "quantity": product.quantity,
+            "image_url": product.image_url,
+            "categories": [{"id": c.id, "name": c.name} for c in product.categories],
+        }
+    }
 
 
 @router.get("/admin/products", tags=["Admin"])
 def get_all_products(db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)):
-    return db.query(Product).all()
+    products = db.query(Product).all()
+    return [
+        {
+            "id": p.id,
+            "name": p.name,
+            "price": p.price,
+            "quantity": p.quantity,
+            "description": p.description,
+            "image_url": p.image_url,
+            "categories": [{"id": c.id, "name": c.name} for c in p.categories],
+        }
+        for p in products
+    ]
 
 
 @router.delete("/admin/products/{product_id}", status_code=204, tags=["Admin"])
@@ -97,12 +134,11 @@ def delete_product(
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    # Delete image from Cloudinary
     if product.cloudinary_public_id:
         try:
             cloudinary.uploader.destroy(product.cloudinary_public_id)
         except Exception:
-            pass  # don't block deletion if Cloudinary call fails
+            pass
 
     db.delete(product)
     db.commit()
@@ -114,7 +150,15 @@ def get_product(product_id: int, db: Session = Depends(get_db), admin: dict = De
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    return product
+    return {
+        "id": product.id,
+        "name": product.name,
+        "price": product.price,
+        "quantity": product.quantity,
+        "description": product.description,
+        "image_url": product.image_url,
+        "categories": [{"id": c.id, "name": c.name} for c in product.categories],
+    }
 
 
 @router.put("/admin/products/{product_id}", tags=["Admin"])
@@ -124,7 +168,7 @@ def update_product(
     description: str = Form(None),
     price: float = Form(...),
     quantity: int = Form(...),
-    category_id: int = Form(...),
+    category_ids: str = Form(...),  # comma-separated
     image: UploadFile = File(None),
     db: Session = Depends(get_db),
     admin: dict = Depends(get_current_admin),
@@ -137,21 +181,27 @@ def update_product(
     product.description = description
     product.price = price
     product.quantity = quantity
-    product.category_id = category_id
+
+    # Update categories
+    try:
+        ids = [int(i.strip()) for i in category_ids.split(",") if i.strip()]
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid category IDs")
+
+    categories = db.query(Category).filter(Category.id.in_(ids)).all()
+    product.categories = categories  # ✅ replaces old categories
 
     if image is not None:
         file_ext = os.path.splitext(image.filename)[1].lower()
         if file_ext not in [".jpg", ".jpeg", ".png", ".webp"]:
             raise HTTPException(status_code=400, detail="Invalid image format")
 
-        # Delete old image from Cloudinary
         if product.cloudinary_public_id:
             try:
                 cloudinary.uploader.destroy(product.cloudinary_public_id)
             except Exception:
                 pass
 
-        # Upload new image
         try:
             result = cloudinary.uploader.upload(
                 image.file,
@@ -165,7 +215,17 @@ def update_product(
 
     db.commit()
     db.refresh(product)
-    return {"message": "Product updated", "product": product}
+    return {
+        "message": "Product updated",
+        "product": {
+            "id": product.id,
+            "name": product.name,
+            "price": product.price,
+            "quantity": product.quantity,
+            "image_url": product.image_url,
+            "categories": [{"id": c.id, "name": c.name} for c in product.categories],
+        }
+    }
 
 
 @router.post("/admin/categories", status_code=201, tags=["Admin Categories"])
@@ -231,6 +291,7 @@ def get_random_products(db: Session = Depends(get_db)):
             "quantity": p.quantity,
             "description": p.description,
             "image_url": p.image_url,
+            "categories": [{"id": c.id, "name": c.name} for c in p.categories],
         }
         for p in products
     ]
