@@ -53,87 +53,73 @@
     }
   </style>
 
-  <script>
-    // 🔒 Check token immediately when page loads
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Access denied. Please log in first.");
-      window.location.href = "admin_login.html"; // 👈 change if your login page has another name
-    }
-  </script>
-</head>
-<body>
-  <header>
-    <h1>Admin Dashboard</h1>
-    <p>Upload New Product</p>
-  </header>
+<script>
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Access denied. Please log in first.");
+    window.location.href = "admin_login.html";
+  }
 
-  <div class="form-container">
-    <h2>Add Product</h2>
-    <form id="productForm">
-      <input type="text" name="name" placeholder="Product Name" required>
-      <input type="number" name="price" placeholder="Price (₦)" required>
-      <select name="category_id" id="categorySelect" required>
-        <option value="">-- Select Category --</option>
-      </select>
-      <textarea name="description" rows="4" placeholder="Product Description"></textarea>
-      <input type="file" name="image" accept="image/*" required />
-      <input type="number" name="quantity" placeholder="Quantity" required>
-      <button type="submit">Upload Product</button>
-    </form>
-    <p id="responseMsg"></p>
-  </div>
+  const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api";
 
-  <script>
-  // Replaced previous base: window.__API_BASE__ || '/api'
-  // Now using production API base
-  const baseUrl = "https://s-and-s-collection.onrender.com/api"; // previously: window.__API_BASE__ || '/api'
-
-    // When form is submitted
-    document.getElementById("productForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-
-      const formData = new FormData(this);
-      const res = await fetch(`${baseUrl}/admin/upload`, {   // 👈 switched to /upload
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        },
-        body: formData
+  // Fetch categories as checkboxes
+  async function fetchCategories() {
+    const res = await fetch(`${baseUrl}/admin/categories`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const categories = await res.json();
+      const container = document.getElementById("categoryCheckboxes");
+      container.innerHTML = "";
+      categories.forEach(cat => {
+        container.innerHTML += `
+          <label style="display:flex; align-items:center; gap:10px; padding:6px 0; font-size:16px; cursor:pointer;">
+            <input type="checkbox" value="${cat.id}" style="width:20px; height:20px;">
+            ${cat.name}
+          </label>`;
       });
+    }
+  }
 
-      const msg = document.getElementById("responseMsg");
-      if (res.ok) {
-        msg.style.color = "green";
-        msg.textContent = "Product uploaded successfully!";
-        this.reset();
-      } else {
-        const data = await res.json();
-        msg.style.color = "red";
-        msg.textContent = data.detail || "Upload failed.";
-      }
+  // Form submit
+  document.getElementById("productForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    // Collect checked categories as comma-separated string
+    const checked = document.querySelectorAll('#categoryCheckboxes input[type=checkbox]:checked');
+    const selectedIds = Array.from(checked).map(c => c.value).join(',');
+
+    if (!selectedIds) {
+      document.getElementById("responseMsg").style.color = "red";
+      document.getElementById("responseMsg").textContent = "Please select at least one category.";
+      return;
+    }
+
+    formData.append("category_ids", selectedIds);
+
+    const res = await fetch(`${baseUrl}/admin/upload`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData
     });
 
-    // Fetch categories
-    async function fetchCategories() {
-      const res = await fetch(`${baseUrl}/admin/categories`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-      });
-
-      if (res.ok) {
-        const categories = await res.json();
-        const select = document.getElementById("categorySelect");
-        select.innerHTML = `<option value="">-- Select Category --</option>`;
-        categories.forEach(cat => {
-          const option = document.createElement("option");
-          option.value = cat.id;
-          option.textContent = cat.name;
-          select.appendChild(option);
-        });
-      }
+    const msg = document.getElementById("responseMsg");
+    if (res.ok) {
+      msg.style.color = "green";
+      msg.textContent = "Product uploaded successfully!";
+      this.reset();
+      // uncheck all checkboxes after reset
+      document.querySelectorAll('#categoryCheckboxes input[type=checkbox]').forEach(cb => cb.checked = false);
+    } else {
+      const data = await res.json();
+      msg.style.color = "red";
+      msg.textContent = data.detail || "Upload failed.";
     }
+  });
 
-    fetchCategories();
-  </script>
+  fetchCategories();
+</script>
 </body>
 </html>

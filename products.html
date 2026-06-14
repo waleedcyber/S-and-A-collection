@@ -285,10 +285,13 @@ select {
 }
 
   </style>
-</head>
-<body>
+    <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <link rel="icon" type="image/png" href="/logo/s%20and%20s%20collection%20logo.png" />
+  <title>All Products - S&S Collection</title>
+</head>
+<body>
   <!-- 🧭 Top Nav Bar -->
   <nav class="navbar">
     <div class="logo">S&S Collection</div>
@@ -376,11 +379,8 @@ select {
 
 
 
-
 <script>
-  // Use production API base for deployed builds.
-  // previously: const baseUrl = "http://127.0.0.1:8000/api" or injected window.__API_BASE__
-  const baseUrl = "https://s-and-s-collection.onrender.com/api";
+  const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api";
 
   const categorySelect = document.getElementById('category');
   const sortSelect = document.getElementById('sort');
@@ -425,13 +425,11 @@ select {
   function addToCart(product) {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
     const existing = cart.find(item => item.id === product.id);
-
     if (existing) {
       existing.quantity += 1;
     } else {
       cart.push({ ...product, quantity: 1 });
     }
-
     localStorage.setItem('cart', JSON.stringify(cart));
     alert('Added to cart!');
     updateCartCount();
@@ -447,17 +445,25 @@ select {
   }
 
   async function fetchProducts() {
-    const category = categorySelect.value;
+    const selectedCategory = categorySelect.value;
     const sort = sortSelect.value;
 
     let url = `${baseUrl}/products?`;
-    if (category) url += `category_id=${category}&`;
     if (sort) url += `sort_by=${sort}`;
 
     try {
       const res = await fetch(url);
       allProducts = await res.json();
-      renderProducts(allProducts);
+
+      // Filter by category client-side since products now have multiple categories
+      let filtered = allProducts;
+      if (selectedCategory) {
+        filtered = allProducts.filter(p =>
+          p.categories && p.categories.some(c => String(c.id) === String(selectedCategory))
+        );
+      }
+
+      renderProducts(filtered);
     } catch (err) {
       productGrid.innerHTML = '<p style="text-align:center;color:red;">⚠️ Error loading products</p>';
     }
@@ -465,14 +471,20 @@ select {
 
   window.onclick = function(event) {
     const modal = document.getElementById("productModal");
-    if (event.target == modal) {
-      closeModal();
-    }
+    if (event.target == modal) closeModal();
   };
 
   function renderProducts(products) {
     productGrid.innerHTML = '';
+    if (products.length === 0) {
+      productGrid.innerHTML = '<p style="text-align:center;color:#888;">No products found.</p>';
+      return;
+    }
     products.forEach(product => {
+      const categoryNames = product.categories && product.categories.length > 0
+        ? product.categories.map(c => c.name).join(', ')
+        : 'Uncategorized';
+
       const card = document.createElement('div');
       card.className = 'product-card';
       card.innerHTML = `
@@ -480,6 +492,7 @@ select {
         <div class="product-info">
           <h3>${product.name}</h3>
           <p>₦${product.price}</p>
+          <p style="font-size:11px;color:#888;">${categoryNames}</p>
         </div>
       `;
       card.addEventListener("click", () => openModal(product));
@@ -489,20 +502,28 @@ select {
 
   function filterProducts() {
     const keyword = searchInput.value.toLowerCase();
-    const filtered = allProducts.filter(p =>
+    const selectedCategory = categorySelect.value;
+
+    let filtered = allProducts.filter(p =>
       p.name.toLowerCase().includes(keyword) ||
       (p.description && p.description.toLowerCase().includes(keyword))
     );
+
+    if (selectedCategory) {
+      filtered = filtered.filter(p =>
+        p.categories && p.categories.some(c => String(c.id) === String(selectedCategory))
+      );
+    }
+
     renderProducts(filtered);
   }
 
-  // 🔔 Notify form
+  // Notify form
   const notifyForm = document.getElementById("notifyForm");
   const notifyResponseMsg = document.getElementById("notifyResponseMsg");
 
   notifyForm.addEventListener("submit", async function (e) {
     e.preventDefault();
-
     const productId = parseInt(document.getElementById("notifyProductId").value);
     const customerName = document.getElementById("notifyName").value.trim();
     const customerEmail = document.getElementById("notifyEmail").value.trim();
@@ -514,22 +535,18 @@ select {
       return;
     }
 
-    const payload = {
-      product_id: productId,
-      customer_name: customerName,
-      customer_email: customerEmail,
-      message: message || "No message."
-    };
-
     try {
       const res = await fetch(`${baseUrl}/request-product`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          product_id: productId,
+          customer_name: customerName,
+          customer_email: customerEmail,
+          message: message || "No message."
+        })
       });
-
       const data = await res.json();
-
       if (res.ok) {
         notifyResponseMsg.style.color = "green";
         notifyResponseMsg.innerText = data.message || "Request submitted!";
@@ -540,14 +557,16 @@ select {
         notifyResponseMsg.innerText = data.detail || "Something went wrong.";
       }
     } catch (err) {
-      console.error(err);
       notifyResponseMsg.style.color = "red";
       notifyResponseMsg.innerText = "Error connecting to server.";
     }
   });
 
-  function openNotifyModal(productId) {
-    document.getElementById("notifyProductId").value = productId;
+  function openNotifyModal() {
+    // ✅ fixed — uses currentModalProduct instead of expecting an argument
+    if (currentModalProduct) {
+      document.getElementById("notifyProductId").value = currentModalProduct.id;
+    }
     document.getElementById("notifyModal").style.display = "block";
     notifyResponseMsg.innerText = "";
   }
@@ -556,7 +575,6 @@ select {
     document.getElementById("notifyModal").style.display = "none";
   }
 
-  // 🔥 Load categories correctly
   async function loadCategories() {
     try {
       const res = await fetch(`${baseUrl}/categories`);
@@ -577,6 +595,7 @@ select {
 
   categorySelect.addEventListener('change', fetchProducts);
   sortSelect.addEventListener('change', fetchProducts);
+  searchInput.addEventListener('input', filterProducts);
 
   loadCategories();
   fetchProducts();

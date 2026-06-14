@@ -6,176 +6,295 @@
   <link rel="icon" type="image/png" href="/logo/s%20and%20s%20collection%20logo.png" />
   <title>Contact Us - S&S Collection</title>
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
       background: #f4f7fb;
       color: #333;
     }
+
     header {
-      background: #ff6b6b;
+      background: linear-gradient(135deg, #ff6b6b, #ff4b4b);
       color: white;
-      padding: 1rem;
+      padding: 30px 20px;
       text-align: center;
     }
-    h1 {
-      margin: 0;
-      font-size: 2rem;
-    }
+
+    header h1 { font-size: 1.8rem; margin-bottom: 6px; }
+    header p { font-size: 0.95rem; opacity: 0.9; }
+
     .contact-container {
       max-width: 1000px;
       margin: 2rem auto;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      padding: 1rem;
+      gap: 1.5rem;
+      padding: 0 16px;
     }
+
     .contact-form, .contact-info {
       background: white;
       padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
+
     .contact-form h2, .contact-info h2 {
-      margin-bottom: 1rem;
-      color: #ff6b6b;
+      margin-bottom: 1.2rem;
+      color: #ff4b4b;
+      font-size: 1.2rem;
     }
+
     .contact-form label {
       display: block;
-      margin-bottom: 0.5rem;
+      margin-bottom: 5px;
       font-weight: bold;
+      font-size: 0.9rem;
+      color: #555;
     }
-    .contact-form input, .contact-form textarea {
+
+    .contact-form input,
+    .contact-form textarea {
       width: 100%;
-      padding: 0.8rem;
-      margin-bottom: 1rem;
-      border: 1px solid #ccc;
+      padding: 12px;
+      margin-bottom: 16px;
+      border: 1px solid #ddd;
       border-radius: 8px;
+      font-size: 15px;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .contact-form button {
-      background: #ff6b6b;
+
+    .contact-form input:focus,
+    .contact-form textarea:focus {
+      border-color: #ff6b6b;
+      box-shadow: 0 0 0 3px rgba(255,107,107,0.15);
+      outline: none;
+    }
+
+    .contact-form textarea { resize: vertical; min-height: 130px; }
+
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #ff6b6b, #ff4b4b);
       color: white;
-      padding: 0.8rem 1.5rem;
+      padding: 14px;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
       cursor: pointer;
-      font-size: 1rem;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
-    .contact-form button:hover {
-      background: #e55a5a;
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(255,75,75,0.35);
     }
-    .contact-info p {
-      margin: 0.5rem 0;
+
+    .submit-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
     }
-    .contact-info a {
-      color: #ff6b6b;
-      text-decoration: none;
-    }
-    .contact-info a:hover {
-      text-decoration: underline;
-    }
-    footer {
-      background: #333;
-      color: white;
-      text-align: center;
-      padding: 1rem;
-      margin-top: 2rem;
-    }
+
     .success-message {
       display: none;
       background: #d4edda;
       color: #155724;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 16px;
       border: 1px solid #c3e6cb;
+      text-align: center;
+      font-weight: bold;
     }
+
+    .error-message {
+      display: none;
+      background: #f8d7da;
+      color: #721c24;
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      border: 1px solid #f5c6cb;
+      text-align: center;
+    }
+
+    /* Contact info cards */
+    .info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .info-item:last-child { border-bottom: none; }
+
+    .info-icon {
+      font-size: 22px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .info-label {
+      font-weight: bold;
+      font-size: 13px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 3px;
+    }
+
+    .info-value {
+      font-size: 15px;
+      color: #333;
+    }
+
+    .info-value a {
+      color: #ff4b4b;
+      text-decoration: none;
+    }
+
+    .info-value a:hover { text-decoration: underline; }
+
+    footer {
+      background: #333;
+      color: white;
+      text-align: center;
+      padding: 1.2rem;
+      margin-top: 2rem;
+      font-size: 14px;
+    }
+
     @media (max-width: 768px) {
-      .contact-container {
-        grid-template-columns: 1fr;
-      }
+      .contact-container { grid-template-columns: 1fr; }
+      header h1 { font-size: 1.4rem; }
     }
   </style>
 </head>
 <body>
+
   <header>
     <h1>Contact S&S Collection</h1>
-    <p>We'd love to hear from you!</p>
+    <p>We'd love to hear from you — reach out anytime!</p>
   </header>
 
   <div class="contact-container">
-    <!-- Contact Form -->
+
     <div class="contact-form">
-      <h2>Send us a message</h2>
+      <h2>✉️ Send us a message</h2>
+
       <div id="successMessage" class="success-message">
-        Thank you for your message! We'll get back to you soon.
+        ✅ Message sent! We'll get back to you within 24 hours.
       </div>
+      <div id="errorMessage" class="error-message">
+        ❌ Something went wrong. Please try again or contact us directly.
+      </div>
+
       <form id="contactForm">
         <label for="name">Your Name</label>
-        <input type="text" id="name" name="name" required>
+        <input type="text" id="name" name="name" placeholder="Ibrahim Yahaya" required>
 
         <label for="email">Your Email</label>
-        <input type="email" id="email" name="email" required>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required>
 
         <label for="message">Message</label>
-        <textarea id="message" name="message" rows="6" required></textarea>
+        <textarea id="message" name="message" placeholder="Tell us how we can help you..." required></textarea>
 
-        <button type="submit">Send Message</button>
+        <button type="submit" class="submit-btn" id="submitBtn">Send Message 🚀</button>
       </form>
     </div>
 
-    <!-- Direct Contact Info -->
     <div class="contact-info">
-      <h2>Get in Touch</h2>
-      <p><strong>Email:</strong> <a href="mailto:ibrahimyahayabdullahi1@gmail.com">ibrahimyahayabdullahi1@gmail.com</a></p>
-      <p><strong>Phone:</strong> <a href="tel:+234703562530">Call us for inquiries</a></p>
-      <p><strong>Location:</strong> Nigeria</p>
-      <p><strong>Business Hours:</strong> Mon - Sat: 9AM - 6PM</p>
-      <p><strong>Response Time:</strong> We typically respond within 24 hours</p>
+      <h2>📬 Get in Touch</h2>
+
+      <div class="info-item">
+        <span class="info-icon">📧</span>
+        <div>
+          <div class="info-label">Email</div>
+          <div class="info-value">
+            <a href="mailto:ibrahimyahayabdullahi1@gmail.com">ibrahimyahayabdullahi1@gmail.com</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <span class="info-icon">📞</span>
+        <div>
+          <div class="info-label">Phone</div>
+          <div class="info-value">
+            <a href="tel:+234703562530">+234 703 562 530</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <span class="info-icon">📍</span>
+        <div>
+          <div class="info-label">Location</div>
+          <div class="info-value">Nigeria</div>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <span class="info-icon">🕐</span>
+        <div>
+          <div class="info-label">Business Hours</div>
+          <div class="info-value">Mon – Sat: 9AM – 6PM</div>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <span class="info-icon">⚡</span>
+        <div>
+          <div class="info-label">Response Time</div>
+          <div class="info-value">We typically reply within 24 hours</div>
+        </div>
+      </div>
     </div>
+
   </div>
 
-  <!-- Unified footer: added by update to include privacy link and contact quick links -->
-  <footer style="background:#111827;color:#f3f4f6;padding:24px 12px;margin-top:24px;text-align:center;">
-    <div style="max-width:1000px;margin:0 auto;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;">
-      <div style="flex:1;min-width:200px;text-align:left;color:#e5e7eb;">
-        <strong>S&S Collection</strong>
-        <div style="font-size:14px;color:#9ca3af;margin-top:6px;">Quality products at friendly prices — serving customers across Nigeria.</div>
-      </div>
-      <div style="flex:1;min-width:200px;text-align:center;color:#e5e7eb;">
-        <a href="/about.html" style="color:#9ca3af;text-decoration:none;margin-right:12px;">About</a>
-        <a href="/contact.html" style="color:#9ca3af;text-decoration:none;margin-right:12px;">Contact</a>
-        <a href="/privacy.html" style="color:#9ca3af;text-decoration:none;">Privacy</a>
-      </div>
-      <div style="flex:1;min-width:200px;text-align:right;color:#9ca3af;">
-        © 2026 S&S Collection
-      </div>
-    </div>
+  <footer>
+    <p>© 2026 S&S Collection. All rights reserved.</p>
   </footer>
 
   <script>
-    // Production API base (added)
-    // previously no base; other pages used window.__API_BASE__ || '/api'
-    const baseUrl = "https://s-and-s-collection.onrender.com/api";
-  </script>
-
-  <script>
-    document.getElementById('contactForm').addEventListener('submit', function(e) {
+    document.getElementById('contactForm').addEventListener('submit', async function(e) {
       e.preventDefault();
 
-      // Show success message
-      const successMessage = document.getElementById('successMessage');
-      successMessage.style.display = 'block';
+      const btn = document.getElementById('submitBtn');
+      const success = document.getElementById('successMessage');
+      const error = document.getElementById('errorMessage');
 
-      // Reset form
-      document.getElementById('contactForm').reset();
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      success.style.display = 'none';
+      error.style.display = 'none';
 
-      // Hide success message after 5 seconds
-      setTimeout(function() {
-        successMessage.style.display = 'none';
-      }, 5000);
+      try {
+        const res = await fetch('https://formspree.io/f/mzdqkojo', {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },
+          body: new FormData(this)
+        });
+
+        if (res.ok) {
+          success.style.display = 'block';
+          this.reset();
+        } else {
+          error.style.display = 'block';
+        }
+      } catch (err) {
+        error.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send Message 🚀';
+      }
     });
   </script>
+
 </body>
-</html></content>
+</html>

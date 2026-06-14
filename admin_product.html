@@ -123,7 +123,7 @@
     // Define the base URL for your API
   // Replaced previous base: window.__API_BASE__ || '/api'
   // Now using production API base
-  const baseUrl = "https://s-and-s-collection.onrender.com/api"; // previously: window.__API_BASE__ || '/api'
+  const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api"; // previously: window.__API_BASE__ || '/api'
 
     const token = localStorage.getItem("token");
 
@@ -167,7 +167,8 @@
           body.innerHTML = `
             <p><strong>Price:</strong> ₦${product.price}</p>
             <p><strong>Quantity:</strong> ${product.quantity}</p>
-            <p><strong>Description:</strong> ${product.description}</p>
+            <p><strong>Categories:</strong> ${product.categories && product.categories.length > 0 ? product.categories.map(c => c.name).join(', ') : 'None'}</p>
+            <p><strong>Description:</strong> ${product.description || 'N/A'}</p>
             <button class="edit-btn" onclick="editProduct(${product.id})">✏️ Edit</button>
             <button class="delete-btn" onclick="deleteProduct(${product.id})">🗑️ Delete</button>
           `;

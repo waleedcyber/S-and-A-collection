@@ -84,19 +84,19 @@
     }
 
     async function fetchOrders(status = "") {
-  // Replaced previous base: window.__API_BASE__ || '/api'
-  // Now using production API base
-  const phone = document.getElementById('searchPhone').value.trim();
-  const baseUrl = "https://s-and-s-collection.onrender.com/api"; // previously: window.__API_BASE__ || '/api'
-        const token = localStorage.getItem("token");
-        if (!token) {
-          alert("Access denied. Please log in.");
-          window.location.href = "admin_login.html";
-          return;
-        }
-        let url = `${baseUrl}/orders`;
-        if (status) url += `?status=${status}`;
-        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      // Use canonical production API base for admin pages.
+      // previously: window.__API_BASE__ || '/api' or a different render URL
+      const phone = document.getElementById('searchPhone').value.trim();
+      const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api"; // canonical production API base
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Access denied. Please log in.");
+        window.location.href = "admin_login.html";
+        return;
+      }
+      let url = `${baseUrl}/orders`;
+      if (status) url += `?status=${status}`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       const orders = await res.json();
 
       const tbody = document.getElementById("orders-table");
@@ -129,7 +129,8 @@
       const token = localStorage.getItem("token");
       if (!token) { window.location.href = 'admin_login.html'; return; }
       try {
-        const res = await fetch(`/api/orders/${id}/mark-paid`, { method: "PATCH", headers: { Authorization: `Bearer ${token}` } });
+        const baseUrl = "https://s-and-s-collection.onrender.com/api";
+        const res = await fetch(`${baseUrl}/orders/${id}/mark-paid`, { method: "PATCH", headers: { Authorization: `Bearer ${token}` } });
         if (res.ok) fetchOrders();
         else throw new Error('Failed');
       } catch (err) {
@@ -138,23 +139,6 @@
       }
     }
 
-    async function markDelivered(id) {
-      const token = localStorage.getItem("token");
-      if (!token) { window.location.href = 'admin_login.html'; return; }
-      try {
-        const res = await fetch(`/api/orders/${id}/mark_delivered`, { method: "PUT", headers: { Authorization: `Bearer ${token}` } });
-        if (res.ok) fetchOrders();
-        else throw new Error('Failed');
-      } catch (err) {
-        console.error(err);
-        alert('Failed to mark delivered.');
-      }
-    }
-
-    function confirmDelete(id) {
-      selectedOrderId = id;
-      document.getElementById('deleteModal').classList.remove('hidden');
-    }
 
     function closeModal() {
       selectedOrderId = null;
@@ -164,7 +148,8 @@
     function deleteOrder() {
       const token = localStorage.getItem("token");
       if (!token) { window.location.href = 'admin_login.html'; return; }
-      fetch(`/api/orders/${selectedOrderId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+      const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api";
+      fetch(`${baseUrl}/orders/${selectedOrderId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
         .then(res => {
           if (res.ok) fetchOrders();
           else alert('Failed to delete order.');

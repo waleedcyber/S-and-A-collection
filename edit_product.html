@@ -10,9 +10,10 @@
     header{background:#333;color:#fff;padding:16px;text-align:center}
     .form-container{max-width:800px;margin:28px auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
     label{display:block;margin:8px 0 4px}
-    input[type=text], input[type=number], textarea, select{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px}
-    button{margin-top:12px;padding:10px 14px;border:none;border-radius:6px;background:#28a745;color:#fff;cursor:pointer}
+    input[type=text], input[type=number], textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;}
+    button{margin-top:12px;padding:10px 14px;border:none;border-radius:6px;background:#28a745;color:#fff;cursor:pointer;width:100%;font-size:16px;}
     .img-preview{max-width:200px;max-height:160px;object-fit:cover;border-radius:6px;margin-top:8px}
+    .category-box{background:#f9f9f9;border:1px solid #ddd;border-radius:6px;padding:12px;max-height:180px;overflow-y:auto;}
   </style>
 </head>
 <body>
@@ -20,38 +21,39 @@
   <div class="form-container">
     <form id="editForm">
       <input type="hidden" id="productId">
-      <label for="name">Name</label>
+
+      <label>Name</label>
       <input id="name" name="name" required />
 
-      <label for="description">Description</label>
+      <label>Description</label>
       <textarea id="description" name="description" rows="4"></textarea>
 
-      <label for="price">Price (₦)</label>
+      <label>Price (₦)</label>
       <input id="price" name="price" type="number" step="0.01" required />
 
-      <label for="quantity">Quantity</label>
+      <label>Quantity</label>
       <input id="quantity" name="quantity" type="number" required />
 
-      <label for="category">Category</label>
-      <select id="category" name="category_id"></select>
+      <label>Categories</label>
+      <div id="categoryCheckboxes" class="category-box"></div>
 
-      <label for="image">Replace Image (optional)</label>
+      <label>Replace Image (optional)</label>
       <input id="image" name="image" type="file" accept="image/*" />
       <img id="preview" class="img-preview" src="" alt="Current image" style="display:none"/>
 
       <p id="msg"></p>
-      <button type="submit">Save changes</button>
+      <button type="submit">Save Changes</button>
     </form>
   </div>
 
   <script>
     const token = localStorage.getItem('token');
     if (!token) { alert('Access denied. Please log in.'); window.location.href='admin_login.html'; }
-  const baseUrl = window.__API_BASE__ || '/api';
+
+    const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api";
 
     function qs(param){
-      const params = new URLSearchParams(window.location.search);
-      return params.get(param);
+      return new URLSearchParams(window.location.search).get(param);
     }
 
     async function fetchCategories(){
@@ -59,48 +61,98 @@
         const res = await fetch(`${baseUrl}/admin/categories`, { headers: { Authorization: `Bearer ${token}` } });
         if (!res.ok) return;
         const cats = await res.json();
-        const sel = document.getElementById('category');
-        sel.innerHTML = '<option value="">-- Select --</option>';
-        cats.forEach(c=>{ const opt=document.createElement('option'); opt.value=c.id; opt.textContent=c.name; sel.appendChild(opt); });
-      }catch(e){console.error(e)}
+        const container = document.getElementById('categoryCheckboxes');
+        container.innerHTML = '';
+        cats.forEach(c => {
+          container.innerHTML += `
+            <label style="display:flex; align-items:center; gap:10px; padding:6px 0; font-size:16px; cursor:pointer;">
+              <input type="checkbox" value="${c.id}" style="width:20px; height:20px;">
+              ${c.name}
+            </label>`;
+        });
+      }catch(e){ console.error(e); }
     }
 
     async function loadProduct(){
       const id = qs('id');
       if (!id){ alert('No product id provided'); window.location.href='admin_product.html'; return; }
       document.getElementById('productId').value = id;
-      await fetchCategories();
+
+      await fetchCategories(); // load checkboxes first
+
       try{
         const res = await fetch(`${baseUrl}/admin/products/${id}`, { headers: { Authorization: `Bearer ${token}` } });
         if (!res.ok){ alert('Failed to load product'); return; }
         const p = await res.json();
+
         document.getElementById('name').value = p.name || '';
         document.getElementById('description').value = p.description || '';
         document.getElementById('price').value = p.price || 0;
         document.getElementById('quantity').value = p.quantity || 0;
-        if (p.category_id) document.getElementById('category').value = p.category_id;
-        if (p.image_url){ const preview=document.getElementById('preview'); preview.src = p.image_url; preview.style.display='block'; }
+
+        // Pre-check the product's current categories
+        if (p.categories && p.categories.length > 0){
+          const ids = p.categories.map(c => String(c.id));
+          document.querySelectorAll('#categoryCheckboxes input[type=checkbox]').forEach(cb => {
+            cb.checked = ids.includes(cb.value);
+          });
+        }
+
+        if (p.image_url){
+          const preview = document.getElementById('preview');
+          preview.src = p.image_url;
+          preview.style.display = 'block';
+        }
       }catch(e){ console.error(e); alert('Error loading product'); }
     }
 
-    document.getElementById('editForm').addEventListener('submit', async (e)=>{
+    document.getElementById('editForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const id = document.getElementById('productId').value;
+
+      // Collect checked categories
+      const checked = document.querySelectorAll('#categoryCheckboxes input[type=checkbox]:checked');
+      const selectedIds = Array.from(checked).map(c => c.value).join(',');
+
+      if (!selectedIds){
+        const msg = document.getElementById('msg');
+        msg.style.color = 'red';
+        msg.textContent = 'Please select at least one category.';
+        return;
+      }
+
       const form = new FormData();
       form.append('name', document.getElementById('name').value);
       form.append('description', document.getElementById('description').value);
       form.append('price', document.getElementById('price').value);
       form.append('quantity', document.getElementById('quantity').value);
-      form.append('category_id', document.getElementById('category').value);
+      form.append('category_ids', selectedIds);
       const file = document.getElementById('image').files[0];
       if (file) form.append('image', file);
 
-      const msg = document.getElementById('msg'); msg.textContent='';
+      const msg = document.getElementById('msg');
+      msg.textContent = '';
+
       try{
-        const res = await fetch(`${baseUrl}/admin/products/${id}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: form });
-        if (res.ok){ msg.style.color='green'; msg.textContent='Product updated'; setTimeout(()=>window.location.href='admin_product.html',800); }
-        else{ const d = await res.json().catch(()=>({detail:'Unknown'})); msg.style.color='red'; msg.textContent = d.detail || 'Update failed'; }
-      }catch(e){ console.error(e); msg.style.color='red'; msg.textContent='Network error'; }
+        const res = await fetch(`${baseUrl}/admin/products/${id}`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}` },
+          body: form
+        });
+        if (res.ok){
+          msg.style.color = 'green';
+          msg.textContent = 'Product updated successfully!';
+          setTimeout(() => window.location.href = 'admin_product.html', 800);
+        } else {
+          const d = await res.json().catch(() => ({detail: 'Unknown'}));
+          msg.style.color = 'red';
+          msg.textContent = d.detail || 'Update failed';
+        }
+      }catch(e){
+        console.error(e);
+        msg.style.color = 'red';
+        msg.textContent = 'Network error';
+      }
     });
 
     loadProduct();

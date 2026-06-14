@@ -1,13 +1,21 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text, Boolean
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text, Boolean, Table
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from db import Base
+
+# Many-to-many junction table
+product_categories = Table(
+    "product_categories",
+    Base.metadata,
+    Column("product_id", Integer, ForeignKey("products.id"), primary_key=True),
+    Column("category_id", Integer, ForeignKey("categories.id"), primary_key=True),
+)
 
 class Category(Base):
     __tablename__ = "categories"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False, unique=True)
-    products = relationship("Product", back_populates="category")
+    products = relationship("Product", secondary=product_categories, back_populates="categories")
 
 class Product(Base):
     __tablename__ = "products"
@@ -17,10 +25,9 @@ class Product(Base):
     price = Column(Float, nullable=False)
     stock = Column(Integer, default=0)
     image_url = Column(String)
-    cloudinary_public_id = Column(String, nullable=True)  # ✅ added for Cloudinary deletion
+    cloudinary_public_id = Column(String, nullable=True)
     quantity = Column(Integer, default=0)
-    category_id = Column(Integer, ForeignKey("categories.id"))
-    category = relationship("Category", back_populates="products")
+    categories = relationship("Category", secondary=product_categories, back_populates="products")
 
 class ProductRequest(Base):
     __tablename__ = "product_requests"

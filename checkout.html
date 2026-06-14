@@ -227,7 +227,7 @@
           // First create the order
           // switched to production base for deployed build
           // previously: (window.__API_BASE__ || '/api')
-          const response = await fetch("https://s-and-s-collection.onrender.com/api" + '/orders', {
+          const response = await fetch("https://s-and-s-collection-32bh.onrender.com/api" + '/orders', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -250,7 +250,7 @@
           const orderId = result?.order?.order_id || result?.order_id || 'N/A';
           
           // Initialize payment server-side so we can set callback_url and metadata
-          const initRes = await fetch("https://s-and-s-collection.onrender.com/api" + '/payments/initialize', {
+          const initRes = await fetch("https://s-and-s-collection-32bh.onrender.com/api" + '/payments/initialize', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: orderData.email, amount: orderData.total, order_id: orderId })
