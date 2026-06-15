@@ -161,9 +161,9 @@
         this.reset();
         document.querySelectorAll('#categoryCheckboxes input[type=checkbox]').forEach(cb => cb.checked = false);
       } else {
-        const data = await res.json();
-        msg.style.color = "red";
-        msg.textContent = data.detail || "Upload failed.";
+       const data = await res.json();
+       msg.style.color = "red";
+       msg.textContent = data.detail || data.message || JSON.stringify(data) || "Upload failed.";
       }
     });
 
