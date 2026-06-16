@@ -146,7 +146,8 @@
       }
 
       // Append category_id (single value since your API uses category_id not category_ids)
-      formData.append("category_id", checked[0].value);
+      const selectedIds = Array.from(checked).map(c => c.value).join(',');
+      formData.append("category_ids", selectedIds);
 
       const res = await fetch(`${baseUrl}/admin/upload`, {
         method: "POST",
