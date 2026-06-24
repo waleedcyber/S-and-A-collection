@@ -6,191 +6,426 @@
   <link rel="icon" type="image/png" href="/logo/s%20and%20s%20collection%20logo.png" />
   <title>Manage Categories</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; }
-    header { background: #333; color: #fff; padding: 20px; text-align: center; }
-    .container { max-width: 600px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);}
-    h2 { text-align: center; }
-    form, .category-list { margin: 20px 0; }
-    input, button { padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
-    button { background: #007bff; color: #fff; cursor: pointer; margin-left: 5px;}
-    button:hover { background: #0056b3; }
-    .category-item { display: flex; align-items: center; margin-bottom: 10px; }
-    .category-name { flex: 1; }
-    .edit-input { width: 60%; margin-right: 10px; }
-    .actions button { margin-left: 5px; }
-    #msg { text-align: center; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { font-family: Arial, sans-serif; background: #f0f2f5; }
+
+    header {
+      background: #333;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 650px;
+      margin: 30px auto;
+      padding: 0 12px;
+    }
+
+    /* Add form card */
+    .add-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+    }
+
+    .add-card h2 {
+      font-size: 16px;
+      color: #555;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .form-row input,
+    .form-row select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    .form-row input:focus,
+    .form-row select:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
+    }
+
+    .add-btn {
+      width: 100%;
+      padding: 13px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .add-btn:hover { background: #0056b3; }
+
+    #msg {
+      text-align: center;
+      margin: 10px 0;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    /* Category list */
+    .section-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    /* Parent category block */
+    .parent-block {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .parent-row {
+      display: flex;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      gap: 10px;
+    }
+
+    .parent-label {
+      font-size: 15px;
+      font-weight: bold;
+      color: #222;
+      flex: 1;
+    }
+
+    .parent-label span {
+      font-size: 11px;
+      background: #007bff;
+      color: white;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-left: 8px;
+      font-weight: normal;
+    }
+
+    /* Child category rows */
+    .children-list {
+      padding: 8px 0;
+    }
+
+    .child-row {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px 10px 32px;
+      gap: 10px;
+      border-bottom: 1px solid #fafafa;
+    }
+
+    .child-row:last-child { border-bottom: none; }
+
+    .child-label {
+      flex: 1;
+      font-size: 14px;
+      color: #444;
+    }
+
+    .child-label::before {
+      content: "↳ ";
+      color: #aaa;
+    }
+
+    /* Edit input */
+    .edit-input {
+      flex: 1;
+      padding: 7px 10px;
+      border: 1px solid #007bff;
+      border-radius: 6px;
+      font-size: 14px;
+      display: none;
+    }
+
+    /* Action buttons */
+    .action-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .action-btn:hover { opacity: 0.8; }
+
+    .btn-edit { background: #ffc107; color: #000; }
+    .btn-save { background: #28a745; color: #fff; display: none; }
+    .btn-cancel { background: #6c757d; color: #fff; display: none; }
+    .btn-delete { background: #dc3545; color: #fff; }
+
+    /* No categories message */
+    .empty-msg {
+      text-align: center;
+      color: #aaa;
+      padding: 30px;
+      background: white;
+      border-radius: 12px;
+    }
   </style>
 </head>
 <body>
+
   <header>
     <h1>Admin Dashboard</h1>
     <p>Manage Categories</p>
   </header>
+
   <div class="container">
-    <h2>Categories</h2>
-    <form id="addCategoryForm">
-      <input type="text" id="newCategoryName" placeholder="New Category Name" required />
-      <button type="submit">Add Category</button>
-    </form>
-    <p id="msg"></p>
-    <div class="category-list" id="categoryList"></div>
+
+    <!-- Add Category Form -->
+    <div class="add-card">
+      <h2>Add New Category</h2>
+      <form id="addCategoryForm">
+        <div class="form-row">
+          <input type="text" id="newCategoryName" placeholder="Category name e.g. Fashion" required />
+          <select id="parentSelect">
+            <option value="">No parent — this is a main category</option>
+          </select>
+          <button type="submit" class="add-btn">+ Add Category</button>
+        </div>
+      </form>
+      <p id="msg"></p>
+    </div>
+
+    <!-- Category List -->
+    <div class="section-title">All Categories</div>
+    <div id="categoryList"></div>
+
   </div>
+
   <script>
-  // Replaced previous base: window.__API_BASE__ || '/api'
-  // Now using production API base
-  const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api"; // previously: window.__API_BASE__ || '/api'
+    const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api";
+    const token = localStorage.getItem("token");
 
-  const token = localStorage.getItem("token");
-  if (!token) {
-    alert("Access denied. Please log in first.");
-    window.location.href = "admin_login.html";
-  }
+    if (!token) {
+      alert("Access denied. Please log in first.");
+      window.location.href = "admin_login.html";
+    }
 
-  async function fetchCategories() {
-    const res = await fetch(`${baseUrl}/admin/categories`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const list = document.getElementById("categoryList");
-    list.innerHTML = "";
-    if (res.ok) {
-      const categories = await res.json();
-      categories.forEach(cat => {
-        const div = document.createElement("div");
-        div.className = "category-item";
-        div.dataset.id = cat.id;
+    let allCategories = [];
 
-        const nameSpan = document.createElement("span");
-        nameSpan.className = "category-name";
-        nameSpan.textContent = cat.name;
-
-        // Edit input (hidden by default)
-        const editInput = document.createElement("input");
-        editInput.type = "text";
-        editInput.value = cat.name;
-        editInput.className = "edit-input";
-        editInput.style.display = "none";
-
-        // Actions
-        const actions = document.createElement("span");
-        actions.className = "actions";
-
-        const editBtn = document.createElement("button");
-        editBtn.textContent = "Edit";
-        editBtn.onclick = () => {
-          nameSpan.style.display = "none";
-          editInput.style.display = "inline-block";
-          editBtn.style.display = "none";
-          saveBtn.style.display = "inline-block";
-          cancelBtn.style.display = "inline-block";
-        };
-
-        const saveBtn = document.createElement("button");
-        saveBtn.textContent = "Save";
-        saveBtn.style.display = "none";
-        saveBtn.onclick = async () => {
-          await updateCategory(cat.id, editInput.value);
-          fetchCategories();
-        };
-
-        const cancelBtn = document.createElement("button");
-        cancelBtn.textContent = "Cancel";
-        cancelBtn.style.display = "none";
-        cancelBtn.onclick = () => {
-          nameSpan.style.display = "inline";
-          editInput.style.display = "none";
-          editBtn.style.display = "inline-block";
-          saveBtn.style.display = "none";
-          cancelBtn.style.display = "none";
-        };
-
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "Delete";
-        deleteBtn.onclick = async () => {
-          if (confirm("Delete this category?")) {
-            await deleteCategory(cat.id);
-            fetchCategories();
-          }
-        };
-
-        actions.append(editBtn, saveBtn, cancelBtn, deleteBtn);
-        div.append(nameSpan, editInput, actions);
-        list.appendChild(div);
+    async function fetchCategories() {
+      const res = await fetch(`${baseUrl}/admin/categories`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-    } else {
-      list.innerHTML = "<p>Failed to load categories.</p>";
-    }
-  }
 
-  async function addCategory(name) {
-    const msg = document.getElementById("msg");
-    msg.textContent = "";
-    const res = await fetch(`${baseUrl}/admin/categories`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ name })
-    });
-    if (res.ok) {
-      msg.style.color = "green";
-      msg.textContent = "Category added!";
+      if (!res.ok) {
+        document.getElementById("categoryList").innerHTML = '<div class="empty-msg">Failed to load categories.</div>';
+        return;
+      }
+
+      allCategories = await res.json();
+      renderCategories();
+      populateParentDropdown();
+    }
+
+    function populateParentDropdown() {
+      const select = document.getElementById("parentSelect");
+      // Only show parent categories (no parent_id) as options
+      const parents = allCategories.filter(c => !c.parent_id);
+      select.innerHTML = '<option value="">No parent — this is a main category</option>';
+      parents.forEach(p => {
+        select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+      });
+    }
+
+    function renderCategories() {
+      const list = document.getElementById("categoryList");
+      list.innerHTML = "";
+
+      // Separate parents and children
+      const parents = allCategories.filter(c => !c.parent_id);
+
+      if (parents.length === 0) {
+        list.innerHTML = '<div class="empty-msg">No categories yet. Add one above!</div>';
+        return;
+      }
+
+      parents.forEach(parent => {
+        const children = allCategories.filter(c => c.parent_id === parent.id);
+
+        const block = document.createElement("div");
+        block.className = "parent-block";
+
+        // Parent row
+        block.innerHTML = `
+          <div class="parent-row">
+            <span class="parent-label">
+              ${parent.name}
+              ${children.length > 0 ? `<span>${children.length} sub</span>` : ''}
+            </span>
+            <input type="text" class="edit-input" id="edit-${parent.id}" value="${parent.name}" />
+            <button class="action-btn btn-edit" onclick="toggleEdit(${parent.id})">✏️ Edit</button>
+            <button class="action-btn btn-save" id="save-${parent.id}" onclick="saveEdit(${parent.id}, null)">Save</button>
+            <button class="action-btn btn-cancel" id="cancel-${parent.id}" onclick="cancelEdit(${parent.id})">Cancel</button>
+            <button class="action-btn btn-delete" onclick="deleteCategory(${parent.id})">🗑️</button>
+          </div>
+        `;
+
+        // Children rows
+        if (children.length > 0) {
+          const childrenDiv = document.createElement("div");
+          childrenDiv.className = "children-list";
+
+          children.forEach(child => {
+            childrenDiv.innerHTML += `
+              <div class="child-row">
+                <span class="child-label" id="label-${child.id}">${child.name}</span>
+                <input type="text" class="edit-input" id="edit-${child.id}" value="${child.name}" />
+                <button class="action-btn btn-edit" id="editbtn-${child.id}" onclick="toggleEdit(${child.id})">✏️ Edit</button>
+                <button class="action-btn btn-save" id="save-${child.id}" onclick="saveEdit(${child.id}, ${parent.id})">Save</button>
+                <button class="action-btn btn-cancel" id="cancel-${child.id}" onclick="cancelEdit(${child.id})">Cancel</button>
+                <button class="action-btn btn-delete" onclick="deleteCategory(${child.id})">🗑️</button>
+              </div>
+            `;
+          });
+
+          block.appendChild(childrenDiv);
+        }
+
+        list.appendChild(block);
+      });
+    }
+
+    function toggleEdit(id) {
+      document.getElementById(`edit-${id}`).style.display = "inline-block";
+      document.getElementById(`save-${id}`).style.display = "inline-block";
+      document.getElementById(`cancel-${id}`).style.display = "inline-block";
+      // hide label if child
+      const label = document.getElementById(`label-${id}`);
+      if (label) label.style.display = "none";
+      // hide edit button
+      const editBtn = document.getElementById(`editbtn-${id}`);
+      if (editBtn) editBtn.style.display = "none";
+    }
+
+    function cancelEdit(id) {
+      document.getElementById(`edit-${id}`).style.display = "none";
+      document.getElementById(`save-${id}`).style.display = "none";
+      document.getElementById(`cancel-${id}`).style.display = "none";
+      const label = document.getElementById(`label-${id}`);
+      if (label) label.style.display = "inline";
+      const editBtn = document.getElementById(`editbtn-${id}`);
+      if (editBtn) editBtn.style.display = "inline-block";
+    }
+
+    async function saveEdit(id, parentId) {
+      const name = document.getElementById(`edit-${id}`).value.trim();
+      if (!name) return;
+      await updateCategory(id, name, parentId);
       fetchCategories();
-    } else {
-      const data = await res.json();
-      msg.style.color = "red";
-      msg.textContent = data.detail || "Failed to add category.";
     }
-  }
 
-  async function updateCategory(id, name) {
-    const msg = document.getElementById("msg");
-    msg.textContent = "";
-    const res = await fetch(`${baseUrl}/admin/categories/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ name })
+    async function addCategory(name, parentId) {
+      const msg = document.getElementById("msg");
+      msg.textContent = "";
+      const body = { name };
+      if (parentId) body.parent_id = parseInt(parentId);
+
+      const res = await fetch(`${baseUrl}/admin/categories`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (res.ok) {
+        msg.style.color = "green";
+        msg.textContent = "✅ Category added!";
+        fetchCategories();
+      } else {
+        const data = await res.json();
+        msg.style.color = "red";
+        msg.textContent = data.detail || "Failed to add category.";
+      }
+    }
+
+    async function updateCategory(id, name, parentId) {
+      const msg = document.getElementById("msg");
+      const body = { name };
+      if (parentId) body.parent_id = parentId;
+
+      const res = await fetch(`${baseUrl}/admin/categories/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (res.ok) {
+        msg.style.color = "green";
+        msg.textContent = "✅ Category updated!";
+      } else {
+        const data = await res.json();
+        msg.style.color = "red";
+        msg.textContent = data.detail || "Failed to update.";
+      }
+    }
+
+    async function deleteCategory(id) {
+      const msg = document.getElementById("msg");
+      if (!confirm("Delete this category? This may affect products assigned to it.")) return;
+
+      const res = await fetch(`${baseUrl}/admin/categories/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        msg.style.color = "green";
+        msg.textContent = "✅ Category deleted!";
+        fetchCategories();
+      } else {
+        const data = await res.json();
+        msg.style.color = "red";
+        msg.textContent = data.detail || "Failed to delete.";
+      }
+    }
+
+    document.getElementById("addCategoryForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const name = document.getElementById("newCategoryName").value.trim();
+      const parentId = document.getElementById("parentSelect").value;
+      if (name) {
+        await addCategory(name, parentId);
+        this.reset();
+      }
     });
-    if (res.ok) {
-      msg.style.color = "green";
-      msg.textContent = "Category updated!";
-    } else {
-      const data = await res.json();
-      msg.style.color = "red";
-      msg.textContent = data.detail || "Failed to update category.";
-    }
-  }
 
-  async function deleteCategory(id) {
-    const msg = document.getElementById("msg");
-    msg.textContent = "";
-    const res = await fetch(`${baseUrl}/admin/categories/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (res.ok) {
-      msg.style.color = "green";
-      msg.textContent = "Category deleted!";
-    } else {
-      const data = await res.json();
-      msg.style.color = "red";
-      msg.textContent = data.detail || "Failed to delete category.";
-    }
-  }
+    fetchCategories();
+  </script>
 
-  document.getElementById("addCategoryForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
-    const name = document.getElementById("newCategoryName").value.trim();
-    if (name) {
-      await addCategory(name);
-      document.getElementById("addCategoryForm").reset();
-    }
-  });
-
-  fetchCategories();
-</script>
 </body>
 </html>

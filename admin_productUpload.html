@@ -110,27 +110,57 @@
 
     const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api";
 
-    async function fetchCategories() {
-      try {
-        const res = await fetch(`${baseUrl}/admin/categories`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const categories = await res.json();
-          const container = document.getElementById("categoryCheckboxes");
-          container.innerHTML = "";
-          categories.forEach(cat => {
+async function fetchCategories() {
+  try {
+    const res = await fetch(`${baseUrl}/admin/categories`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const categories = await res.json();
+      const container = document.getElementById("categoryCheckboxes");
+      container.innerHTML = "";
+
+      // Separate parents and children
+      const parents = categories.filter(c => !c.parent_id);
+      const children = categories.filter(c => c.parent_id);
+
+      if (parents.length === 0) {
+        container.textContent = "No categories found. Add some first.";
+        return;
+      }
+
+      parents.forEach(parent => {
+        const parentChildren = children.filter(c => c.parent_id === parent.id);
+
+        // Parent label (not selectable, just a group header)
+        container.innerHTML += `
+          <p style="font-weight:bold; color:#333; margin:10px 0 4px; font-size:15px;">
+            📁 ${parent.name}
+          </p>`;
+
+        if (parentChildren.length > 0) {
+          // Show subcategories as checkboxes
+          parentChildren.forEach(child => {
             container.innerHTML += `
-              <label style="display:flex; align-items:center; gap:10px; padding:6px 0; font-size:16px; cursor:pointer;">
-                <input type="checkbox" value="${cat.id}" style="width:20px; height:20px;">
-                ${cat.name}
+              <label style="display:flex; align-items:center; gap:10px; padding:6px 0 6px 16px; font-size:15px; cursor:pointer;">
+                <input type="checkbox" value="${child.id}" style="width:20px; height:20px;">
+                ${child.name}
               </label>`;
           });
+        } else {
+          // No subcategories — parent itself is selectable
+          container.innerHTML += `
+            <label style="display:flex; align-items:center; gap:10px; padding:6px 0 6px 16px; font-size:15px; cursor:pointer;">
+              <input type="checkbox" value="${parent.id}" style="width:20px; height:20px;">
+              ${parent.name}
+            </label>`;
         }
-      } catch (err) {
-        document.getElementById("categoryCheckboxes").textContent = "Failed to load categories.";
-      }
+      });
     }
+  } catch (err) {
+    document.getElementById("categoryCheckboxes").textContent = "Failed to load categories.";
+  }
+}
 
     document.getElementById("productForm").addEventListener("submit", async function(e) {
       e.preventDefault();

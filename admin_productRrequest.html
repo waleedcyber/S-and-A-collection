@@ -3,142 +3,205 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Requested Products</title>
+  <link rel="icon" type="image/png" href="/logo/s%20and%20s%20collection%20logo.png" />
+  <title>Product Requests - Admin</title>
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       font-family: Arial, sans-serif;
       background-color: #f0f2f5;
-      margin: 0;
     }
 
     header {
       background-color: #333;
       color: white;
-      padding: 20px;
+      padding: 16px 20px;
       text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
+
+    header h1 { font-size: 20px; margin-bottom: 4px; }
+
+    header a {
+      color: #aaa;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    header a:hover { color: white; }
 
     .content {
       max-width: 900px;
-      margin: 40px auto;
+      margin: 30px auto;
+      padding: 0 12px;
+    }
+
+    /* Stats */
+    .stats {
       background: white;
-      padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      font-size: 15px;
+      color: #555;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 12px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #eee;
-    }
-
-    .message {
-      text-align: center;
-      margin-top: 20px;
+    .stats span {
       font-weight: bold;
-      color: #888;
+      color: #333;
+      font-size: 20px;
+    }
+
+    /* Request cards */
+    .request-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: box-shadow 0.2s;
+    }
+
+    .request-card:hover {
+      box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    }
+
+    .request-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .request-name {
+      font-weight: bold;
+      font-size: 15px;
+      color: #222;
+      flex: 1;
+    }
+
+    .product-badge {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .request-email {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .request-message {
+      font-size: 14px;
+      color: #444;
+      background: #f9f9f9;
+      border-left: 3px solid #ddd;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-style: italic;
+    }
+
+    .request-id {
+      font-size: 11px;
+      color: #bbb;
+    }
+
+    /* Empty / loading */
+    .empty-msg {
+      text-align: center;
+      padding: 40px;
+      background: white;
+      border-radius: 12px;
+      color: #aaa;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
+
   <header>
-  <link rel="icon" type="image/png" href="/logo/s%20and%20s%20collection%20logo.png" />
-    <h1>Admin Dashboard</h1>
-    <p>Product Requests</p>
+    <h1>📋 Product Requests</h1>
+    <a href="admin_home.html">← Back to Dashboard</a>
   </header>
 
   <div class="content">
-    <div id="message" class="message">Loading requests...</div>
-    <table style="display:none;">
-      <thead>
-        <tr>
-          <th>Product Name</th>
-          <th>Requested By (Email)</th>
-          <th>Quantity</th>
-          <th>Message</th>
-        </tr>
-      </thead>
-      <tbody id="requests-table-body">
-      </tbody>
-    </table>
+    <div class="stats">
+      Total Requests: <span id="totalCount">...</span>
+    </div>
+    <div id="requestsList"></div>
   </div>
 
   <script>
-    // Change this depending on environment
-  // Replaced previous base: window.__API_BASE__ || '/api'
-  // Now using production API base
-  const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api"; // previously: window.__API_BASE__ || '/api'
-
-    // 🔒 Check token immediately when page loads (same behavior as upload page)
+    const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api";
     const token = localStorage.getItem("token");
+
     if (!token) {
       alert("Access denied. Please log in first.");
       window.location.href = "admin_login.html";
-    } else {
-      // load requests
-      (async function loadRequests() {
-        const messageDiv = document.getElementById("message");
-        const table = document.querySelector("table");
-        console.log("admin_productRrequest: token=", token);
-        try {
-          const res = await fetch(`${baseUrl}/product-requests`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+    }
 
-          if (!res.ok) {
-            // try to extract server error detail for debugging
-            let detail = null;
-            try {
-              const json = await res.json();
-              detail = json.detail || JSON.stringify(json);
-            } catch (e) {
-              try { detail = await res.text(); } catch (e2) { detail = String(res.status); }
-            }
-            console.error('Request failed', res.status, detail);
-            alert(`Session expired or unauthorized. Server returned ${res.status}: ${detail}`);
-            localStorage.removeItem("token");
-            window.location.href = "admin_login.html";
-            return;
-          }
+    async function loadRequests() {
+      const list = document.getElementById("requestsList");
+      list.innerHTML = '<div class="empty-msg">Loading requests...</div>';
 
-          const data = await res.json();
-          const tbody = document.getElementById("requests-table-body");
+      try {
+        const res = await fetch(`${baseUrl}/product-requests`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-          if (data.length === 0) {
-            messageDiv.textContent = "No product requests found.";
-          } else {
-            messageDiv.style.display = "none";
-            table.style.display = "table";
-            data.forEach(request => {
-              const row = document.createElement("tr");
-              row.innerHTML = `
-                <td>${request.product_name}</td>
-                <td>${request.email}</td>
-                <td>${request.quantity}</td>
-                <td>${request.message}</td>
-              `;
-              tbody.appendChild(row);
-            });
-          }
-        } catch (error) {
-          console.error('Unexpected error while loading requests', error);
-          alert("Session expired or unauthorized. Please log in again.");
+        if (res.status === 401) {
           localStorage.removeItem("token");
           window.location.href = "admin_login.html";
+          return;
         }
-      })();
+
+        if (!res.ok) {
+          list.innerHTML = '<div class="empty-msg">Failed to load requests.</div>';
+          return;
+        }
+
+        const data = await res.json();
+        document.getElementById("totalCount").textContent = data.length;
+
+        if (data.length === 0) {
+          list.innerHTML = '<div class="empty-msg">🎉 No product requests yet.</div>';
+          return;
+        }
+
+        list.innerHTML = '';
+        data.forEach(request => {
+          const card = document.createElement("div");
+          card.className = "request-card";
+          card.innerHTML = `
+            <div class="request-top">
+              <span class="request-name">${request.customer_name}</span>
+              <span class="product-badge">🛍️ ${request.product_name}</span>
+            </div>
+            <div class="request-email">📧 ${request.customer_email}</div>
+            <div class="request-message">${request.message || 'No message provided.'}</div>
+            <div class="request-id">Request #${request.id}</div>
+          `;
+          list.appendChild(card);
+        });
+
+      } catch (error) {
+        console.error(error);
+        list.innerHTML = '<div class="empty-msg">Something went wrong. Please try again.</div>';
+      }
     }
+
+    loadRequests();
   </script>
+
 </body>
 </html>

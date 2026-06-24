@@ -237,17 +237,42 @@ def create_category(
     existing = db.query(Category).filter(Category.name == category.name).first()
     if existing:
         raise HTTPException(status_code=400, detail="Category already exists")
-    new_category = Category(name=category.name)
+    
+    # Validate parent if provided
+    if category.parent_id:
+        parent = db.query(Category).filter(Category.id == category.parent_id).first()
+        if not parent:
+            raise HTTPException(status_code=400, detail="Parent category not found")
+        # prevent nesting more than one level
+        if parent.parent_id is not None:
+            raise HTTPException(status_code=400, detail="Cannot nest more than one level deep")
+
+    new_category = Category(name=category.name, parent_id=category.parent_id)
     db.add(new_category)
     db.commit()
     db.refresh(new_category)
-    return {"message": "Category created", "category": {"id": new_category.id, "name": new_category.name}}
+    return {
+        "message": "Category created",
+        "category": {
+            "id": new_category.id,
+            "name": new_category.name,
+            "parent_id": new_category.parent_id,
+        }
+    }
 
 
 @router.get("/admin/categories", tags=["Admin Categories"])
 def list_categories(db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)):
     categories = db.query(Category).all()
-    return [{"id": c.id, "name": c.name} for c in categories]
+    return [
+        {
+            "id": c.id,
+            "name": c.name,
+            "parent_id": c.parent_id,
+            "children": [{"id": ch.id, "name": ch.name} for ch in c.children]
+        }
+        for c in categories
+    ]
 
 
 @router.put("/admin/categories/{category_id}", tags=["Admin Categories"])
@@ -261,9 +286,14 @@ def update_category(
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
     cat.name = category.name
+    cat.parent_id = category.parent_id
     db.commit()
     db.refresh(cat)
-    return {"id": cat.id, "name": cat.name}
+    return {
+        "id": cat.id,
+        "name": cat.name,
+        "parent_id": cat.parent_id,
+    }
 
 
 @router.delete("/admin/categories/{category_id}", tags=["Admin Categories"])
@@ -297,9 +327,25 @@ def get_random_products(db: Session = Depends(get_db)):
     ]
 
 
-@router.get("/product-requests", response_model=List[ProductRequestResponseSchema], tags=["Admin"])
-def get_all_product_requests(db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)):
-    return db.query(ProductRequest).all()
+@router.get("/product-requests", response_model=None, tags=["Admin"])
+def get_all_product_requests(
+    db: Session = Depends(get_db), admin: dict = Depends(get_current_admin)
+):
+    requests = db.query(ProductRequest).all()
+    result = []
+    for r in requests:
+        # Join product name
+        product = db.query(Product).filter(Product.id == r.product_id).first()
+        product_name = product.name if product else "Unknown Product"
+        result.append({
+            "id": r.id,
+            "product_id": r.product_id,
+            "product_name": product_name,
+            "customer_name": r.customer_name,
+            "customer_email": r.customer_email,
+            "message": r.message or "No message provided.",
+        })
+    return result
 
 
 @router.put("/orders/{order_id}/mark_paid", tags=["Admin"])
