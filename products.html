@@ -3,296 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>All Products - Anty Sa'a Store</title>
-  <style>
-   :root {
-  --main-color: #ff6b6b;
-  --text-color: #333;
-  --bg-color: #fefefe;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #f0f0f0;
-}
-
-/* Navbar */
-.navbar {
-  background-color: white;
-  padding: 10px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #ddd;
-  position: sticky;
-  top: 0;
-  z-index: 999;
-}
-
-.navbar .logo {
-  font-weight: bold;
-  color: var(--main-color);
-  font-size: 18px;
-}
-
-.nav-links {
-  display: flex;
-  gap: 15px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: var(--text-color);
-  font-size: 14px;
-}
-
-.nav-links a:hover {
-  color: var(--main-color);
-}
-
-header {
-  background-color: var(--main-color);
-  color: white;
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-header h1 {
-  margin: 0;
-  font-size: 18px;
-}
-
-.cart-icon {
-  position: relative;
-  font-size: 24px;
-  cursor: pointer;
-}
-
-.cart-count {
-  position: absolute;
-  top: -8px;
-  right: -10px;
-  background-color: white;
-  color: var(--main-color);
-  border-radius: 50%;
-  padding: 2px 6px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.search-container {
-  padding: 10px;
-  text-align: center;
-  background-color: #fff;
-}
-
-.search-container input {
-  width: 90%;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
-
-.filters {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 10px auto;
-  padding: 0 10px;
-}
-
-select {
-  padding: 8px;
-  border-radius: 8px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  width: 140px;
-}
-
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 12px;
-  padding: 10px;
-  max-width: 1000px;
-  margin: auto;
-}
-
-.product-card {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  transition: transform 0.2s;
-  cursor: pointer;
-}
-
-.product-card:hover {
-  transform: scale(1.03);
-}
-
-.product-card img {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-}
-
-.product-info {
-  padding: 10px;
-  text-align: center;
-}
-
-.product-info h3 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.product-info p {
-  margin: 6px 0;
-  color: #444;
-  font-size: 13px;
-}
-
-.floating-checkout {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #28a745;
-  color: white;
-  padding: 12px 18px;
-  border-radius: 30px;
-  font-weight: bold;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  z-index: 100;
-}
-
-@media (min-width: 400px) {
-  .product-card img {
-    height: 160px;
-  }
-
-  .product-info h3 {
-    font-size: 16px;
-  }
-
-  .product-info p {
-    font-size: 14px;
-  }
-
-  select {
-    font-size: 15px;
-  }
-}
-
-/* ✅ Modal Section */
-.modal {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  width: 95%;
-  max-width: 400px;
-  background: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  position: relative;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  overflow-y: auto;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.modal-content img {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-  margin-bottom: 15px;
-}
-
-.modal-content h2 {
-  margin-top: 0;
-  font-size: 20px;
-  color: var(--text-color);
-}
-
-.modal-content p {
-  font-size: 14px;
-  color: #555;
-  margin: 8px 0;
-}
-
-.buy-button {
-  margin-top: 10px;
-  padding: 10px 15px;
-  background-color: var(--main-color);
-  border: none;
-  border-radius: 6px;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  width: 100%;
-  font-size: 15px;
-  transition: background 0.3s ease;
-}
-
-.buy-button:hover {
-  background-color: #ff4b4b;
-}
-
-/* Modal Close Button */
-.modal-close {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 28px;
-  font-weight: bold;
-  color: #ffffff;
-  background: #ff3b3b;
-  border: none;
-  border-radius: 50%;
-  width: 35px;
-  height: 35px;
-  text-align: center;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-  z-index: 1001;
-}
-
-.modal-close:hover {
-  background: #e60000;
-  transform: scale(1.1);
-}
-
-  </style>
-    <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <link rel="icon" type="image/png" href="/logo/s%20and%20s%20collection%20logo.png" />
   <title>All Products - S&S Collection</title>
+  <style>
+    :root { --main-color: #ff6b6b; --text-color: #333; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background-color: #f0f0f0; }
+
+    .navbar { background:white; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ddd; position:sticky; top:0; z-index:999; }
+    .navbar .logo { font-weight:bold; color:var(--main-color); font-size:18px; }
+    .nav-links { display:flex; gap:15px; list-style:none; }
+    .nav-links a { text-decoration:none; color:var(--text-color); font-size:14px; }
+    .nav-links a:hover { color:var(--main-color); }
+
+    header { background:var(--main-color); color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; }
+    header h1 { margin:0; font-size:18px; }
+    .cart-icon { position:relative; font-size:24px; cursor:pointer; }
+    .cart-count { position:absolute; top:-8px; right:-10px; background:white; color:var(--main-color); border-radius:50%; padding:2px 6px; font-size:12px; font-weight:bold; }
+    .floating-checkout { background:#28a745; color:white; padding:10px 16px; border-radius:30px; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.2); border:none; cursor:pointer; font-size:14px; }
+
+    .search-container { padding:10px; text-align:center; background:white; }
+    .search-container input { width:90%; padding:10px; border-radius:8px; border:1px solid #ccc; font-size:14px; }
+
+    /* Category filter tabs */
+    .category-tabs { display:flex; gap:8px; overflow-x:auto; padding:10px 16px; background:white; border-bottom:1px solid #eee; }
+    .category-tabs::-webkit-scrollbar { display:none; }
+    .tab { padding:7px 16px; border-radius:20px; border:1px solid #ddd; background:white; font-size:13px; cursor:pointer; white-space:nowrap; transition:all 0.2s; color:#555; }
+    .tab.active { background:var(--main-color); color:white; border-color:var(--main-color); }
+    .tab:hover:not(.active) { border-color:var(--main-color); color:var(--main-color); }
+
+    .filters { display:flex; justify-content:flex-end; padding:8px 16px; }
+    select { padding:7px 12px; border-radius:8px; font-size:14px; border:1px solid #ccc; }
+
+    .product-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:12px; padding:12px; max-width:1000px; margin:auto; }
+
+    .product-card { background:white; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,0.08); overflow:hidden; transition:transform 0.2s; cursor:pointer; position:relative; }
+    .product-card:hover { transform:scale(1.03); }
+    .product-card img { width:100%; height:140px; object-fit:cover; }
+    .sold-out-overlay { position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.72); color:white; font-size:10px; font-weight:bold; padding:3px 8px; border-radius:10px; }
+    .product-info { padding:10px; text-align:center; }
+    .product-info h3 { margin:0; font-size:14px; font-weight:600; }
+    .product-info .price { margin:4px 0 0; color:#ff4b4b; font-weight:bold; font-size:14px; }
+    .product-info .cat-label { font-size:11px; color:#aaa; margin-top:2px; }
+
+    /* Modal */
+    .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:1000; }
+    .modal-content { width:95%; max-width:400px; background:#fff; padding:20px; border-radius:12px; position:relative; box-shadow:0 4px 12px rgba(0,0,0,0.3); overflow-y:auto; animation:fadeIn 0.3s ease; max-height:90vh; }
+    @keyframes fadeIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
+    .modal-content img { width:100%; height:auto; border-radius:8px; margin-bottom:12px; }
+    .modal-content h2 { margin-top:0; font-size:20px; color:var(--text-color); }
+    .modal-content p { font-size:14px; color:#555; margin:6px 0; }
+    .buy-button { margin-top:10px; padding:11px 15px; background:var(--main-color); border:none; border-radius:6px; color:white; font-weight:bold; cursor:pointer; width:100%; font-size:15px; transition:background 0.2s; }
+    .buy-button:hover { background:#ff4b4b; }
+    .modal-close { position:absolute; top:10px; right:15px; font-size:26px; font-weight:bold; color:#fff; background:#ff3b3b; border:none; border-radius:50%; width:34px; height:34px; text-align:center; cursor:pointer; line-height:34px; }
+    .modal-close:hover { background:#e60000; }
+    .sold-out-box { margin-top:12px; background:#fff5f5; border:1px solid #ffcdd2; border-radius:8px; padding:14px; text-align:center; }
+    .sold-out-box p { color:#c62828; font-weight:bold; margin-bottom:8px; }
+    .notify-btn { padding:10px 20px; background:#333; color:white; border:none; border-radius:8px; cursor:pointer; font-size:14px; font-weight:bold; }
+    .notify-input { width:100%; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid #ddd; font-size:14px; }
+  </style>
 </head>
 <body>
-  <!-- 🧭 Top Nav Bar -->
+
   <nav class="navbar">
     <div class="logo">S&S Collection</div>
     <ul class="nav-links">
@@ -308,299 +80,250 @@ select {
     <div class="cart-icon" onclick="goToCart()">
       🛒<span class="cart-count" id="cartCount">0</span>
     </div>
-    <a href="checkout.html"><button class="floating-checkout">Checkout</button></a>
+    <button class="floating-checkout" onclick="goToCart()">Checkout</button>
   </header>
 
   <div class="search-container">
-    <input type="text" id="searchInput" placeholder="🔍 Search products..." oninput="filterProducts()">
+    <input type="text" id="searchInput" placeholder="🔍 Search products...">
+  </div>
+
+  <!-- Category tabs -->
+  <div class="category-tabs" id="categoryTabs">
+    <button class="tab active" data-id="">All</button>
   </div>
 
   <div class="filters">
-    <select id="category">
-      <option value="">All Categories</option>
-    </select>
-
     <select id="sort">
       <option value="newest">Newest</option>
-      <option value="price">Price</option>
-      <option value="name">Name</option>
+      <option value="price">Price ↑</option>
+      <option value="name">Name A-Z</option>
     </select>
   </div>
 
   <section class="product-grid" id="productGrid"></section>
 
-  <!-- 🪄 Modal (hidden by default) -->
-<!-- 🪄 Modal (Updated) -->
-<!-- Product Info Modal -->
-<div id="productModal" class="modal" style="display: none">
-  <div class="modal-content">
-    <span class="modal-close" onclick="closeModal()">&times;</span>
-    <img id="modalImage" src="" alt="Product Image" />
-    <h2 id="modalTitle"></h2>
-    <p id="modalDesc"></p>
-    <p id="modalPrice" style="font-weight: bold;"></p>
-    <p id="modalQuantity" style="color: gray;"></p>
-
-    <!-- Sold Out Section triggers notify modal -->
-    <div id="soldOutSection" style="display:none; margin-top: 10px;">
-      <p style="color: red; font-weight: bold;">🚫 This product is currently sold out.</p>
-      <p style="font-size: 14px; margin-bottom: 8px;">We're sorry this item is unavailable.</p>
-      <button class="buy-button" style="background:#333;" onclick="openNotifyModal()">Notify Me</button>
+  <!-- Product Modal -->
+  <div id="productModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">×</button>
+      <img id="modalImage" src="" alt="Product Image" />
+      <h2 id="modalTitle"></h2>
+      <p id="modalDesc"></p>
+      <p id="modalPrice" style="font-weight:bold;font-size:18px;color:#ff4b4b;"></p>
+      <p id="modalQuantity" style="color:#888;"></p>
+      <div id="soldOutSection" class="sold-out-box" style="display:none;">
+        <p>🚫 This product is currently sold out</p>
+        <button class="notify-btn" onclick="openNotifyModal()">🔔 Notify Me</button>
+      </div>
+      <button class="buy-button" id="buyBtn" onclick="modalAddToCart()">🛒 Add to Cart</button>
     </div>
-
-    <button class="buy-button" id="buyBtn" onclick="modalAddToCart()">Add to Cart</button>
   </div>
-</div>
 
-<!-- Notify Me Modal -->
-<div id="notifyModal" class="modal" style="display: none">
-  <div class="modal-content">
-    <span class="modal-close" onclick="closeNotifyModal()">&times;</span>
-    <h2>Notify Me When Available</h2>
-    <p style="margin-bottom: 10px">We'll notify you when this product is back in stock.</p>
-
-    <form id="notifyForm">
-      <input type="hidden" id="notifyProductId" /> <!-- Set this dynamically -->
-      <input type="text" id="notifyName" placeholder="Your Name" required
-        style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc;">
-      <input type="email" id="notifyEmail" placeholder="Your Email or Phone" required
-        style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc;">
-      <textarea id="notifyMessage" placeholder="Leave a message (optional)" 
-        style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc;"></textarea>
-
-      <button type="submit" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
-        Submit
-      </button>
-    </form>
-
-    <p id="notifyResponseMsg" style="margin-top: 10px; color: green;"></p>
+  <!-- Notify Modal -->
+  <div id="notifyModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeNotifyModal()">×</button>
+      <h2>🔔 Notify Me When Available</h2>
+      <p style="margin-bottom:14px;color:#666;">We'll notify you when this is back in stock.</p>
+      <form id="notifyForm">
+        <input type="hidden" id="notifyProductId" />
+        <input class="notify-input" type="text" id="notifyName" placeholder="Your Name" required />
+        <input class="notify-input" type="email" id="notifyEmail" placeholder="Your Email" required />
+        <textarea class="notify-input" id="notifyMessage" placeholder="Message (optional)" rows="3"></textarea>
+        <button type="submit" class="buy-button" style="background:#28a745;">Submit</button>
+      </form>
+      <p id="notifyResponseMsg" style="margin-top:10px;text-align:center;color:green;"></p>
+    </div>
   </div>
-</div>
 
+  <script>
+    const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api";
+    let allProducts = [];
+    let currentModalProduct = null;
+    let selectedCategoryId = '';
 
+    // Read category from URL if coming from homepage
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlCategory = urlParams.get('category');
+    if (urlCategory) selectedCategoryId = urlCategory;
 
-<script>
-  const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api";
+    async function loadCategories() {
+      try {
+        const res = await fetch(`${baseUrl}/categories`);
+        if (!res.ok) return;
+        const categories = await res.json();
+        const tabs = document.getElementById('categoryTabs');
 
-  const categorySelect = document.getElementById('category');
-  const sortSelect = document.getElementById('sort');
-  const productGrid = document.getElementById('productGrid');
-  const searchInput = document.getElementById('searchInput');
-  let allProducts = [];
-  let currentModalProduct = null;
+        categories.forEach(cat => {
+          // Add parent tab
+          const tab = document.createElement('button');
+          tab.className = 'tab' + (String(cat.id) === String(selectedCategoryId) ? ' active' : '');
+          tab.dataset.id = cat.id;
+          tab.textContent = cat.name;
+          tab.onclick = () => selectCategory(cat.id, tab);
+          tabs.appendChild(tab);
 
-  function openModal(product) {
-    currentModalProduct = product;
-    document.getElementById("modalImage").src = product.image_url || 'https://via.placeholder.com/300x200';
-    document.getElementById("modalTitle").textContent = product.name;
-    document.getElementById("modalDesc").textContent = product.description || "No description provided.";
-    document.getElementById("modalPrice").textContent = "₦" + product.price;
-    document.getElementById("modalQuantity").textContent = `Available: ${product.quantity}`;
+          // Add child tabs if any
+          if (cat.children && cat.children.length > 0) {
+            cat.children.forEach(child => {
+              const childTab = document.createElement('button');
+              childTab.className = 'tab' + (String(child.id) === String(selectedCategoryId) ? ' active' : '');
+              childTab.dataset.id = child.id;
+              childTab.textContent = '↳ ' + child.name;
+              childTab.onclick = () => selectCategory(child.id, childTab);
+              tabs.appendChild(childTab);
+            });
+          }
+        });
 
-    const soldOutSection = document.getElementById("soldOutSection");
-    const buyBtn = document.getElementById("buyBtn");
-
-    if (product.quantity < 1) {
-      soldOutSection.style.display = "block";
-      buyBtn.style.display = "none";
-    } else {
-      soldOutSection.style.display = "none";
-      buyBtn.style.display = "block";
+        // Set initial active tab if URL had category
+        if (selectedCategoryId) {
+          document.querySelector('.tab[data-id=""]')?.classList.remove('active');
+        }
+      } catch (err) { console.error(err); }
     }
 
-    document.getElementById("productModal").style.display = "block";
-  }
-
-  function closeModal() {
-    document.getElementById("productModal").style.display = "none";
-    closeNotifyModal();
-  }
-
-  function modalAddToCart() {
-    if (!currentModalProduct) return;
-    addToCart(currentModalProduct);
-    closeModal();
-  }
-
-  function addToCart(product) {
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
-    const existing = cart.find(item => item.id === product.id);
-    if (existing) {
-      existing.quantity += 1;
-    } else {
-      cart.push({ ...product, quantity: 1 });
+    function selectCategory(id, tabEl) {
+      selectedCategoryId = String(id);
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tabEl.classList.add('active');
+      applyFilters();
     }
-    localStorage.setItem('cart', JSON.stringify(cart));
-    alert('Added to cart!');
-    updateCartCount();
-  }
 
-  function updateCartCount() {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    document.getElementById('cartCount').innerText = cart.length;
-  }
+    async function fetchProducts() {
+      const sort = document.getElementById('sort').value;
+      let url = `${baseUrl}/products?`;
+      if (sort) url += `sort_by=${sort}`;
+      try {
+        const res = await fetch(url);
+        allProducts = await res.json();
+        applyFilters();
+      } catch (err) {
+        document.getElementById('productGrid').innerHTML = '<p style="text-align:center;color:red;padding:20px;">⚠️ Error loading products</p>';
+      }
+    }
 
-  function goToCart() {
-    window.location.href = 'cart.html';
-  }
-
-  async function fetchProducts() {
-    const selectedCategory = categorySelect.value;
-    const sort = sortSelect.value;
-
-    let url = `${baseUrl}/products?`;
-    if (sort) url += `sort_by=${sort}`;
-
-    try {
-      const res = await fetch(url);
-      allProducts = await res.json();
-
-      // Filter by category client-side since products now have multiple categories
+    function applyFilters() {
+      const keyword = document.getElementById('searchInput').value.toLowerCase();
       let filtered = allProducts;
-      if (selectedCategory) {
-        filtered = allProducts.filter(p =>
-          p.categories && p.categories.some(c => String(c.id) === String(selectedCategory))
+
+      if (selectedCategoryId) {
+        filtered = filtered.filter(p =>
+          p.categories && p.categories.some(c => String(c.id) === String(selectedCategoryId))
+        );
+      }
+
+      if (keyword) {
+        filtered = filtered.filter(p =>
+          p.name.toLowerCase().includes(keyword) ||
+          (p.description && p.description.toLowerCase().includes(keyword))
         );
       }
 
       renderProducts(filtered);
-    } catch (err) {
-      productGrid.innerHTML = '<p style="text-align:center;color:red;">⚠️ Error loading products</p>';
-    }
-  }
-
-  window.onclick = function(event) {
-    const modal = document.getElementById("productModal");
-    if (event.target == modal) closeModal();
-  };
-
-  function renderProducts(products) {
-    productGrid.innerHTML = '';
-    if (products.length === 0) {
-      productGrid.innerHTML = '<p style="text-align:center;color:#888;">No products found.</p>';
-      return;
-    }
-    products.forEach(product => {
-      const categoryNames = product.categories && product.categories.length > 0
-        ? product.categories.map(c => c.name).join(', ')
-        : 'Uncategorized';
-
-      const card = document.createElement('div');
-      card.className = 'product-card';
-      card.innerHTML = `
-        <img src="${product.image_url || 'https://via.placeholder.com/100x100'}" alt="${product.name}" />
-        <div class="product-info">
-          <h3>${product.name}</h3>
-          <p>₦${product.price}</p>
-          <p style="font-size:11px;color:#888;">${categoryNames}</p>
-        </div>
-      `;
-      card.addEventListener("click", () => openModal(product));
-      productGrid.appendChild(card);
-    });
-  }
-
-  function filterProducts() {
-    const keyword = searchInput.value.toLowerCase();
-    const selectedCategory = categorySelect.value;
-
-    let filtered = allProducts.filter(p =>
-      p.name.toLowerCase().includes(keyword) ||
-      (p.description && p.description.toLowerCase().includes(keyword))
-    );
-
-    if (selectedCategory) {
-      filtered = filtered.filter(p =>
-        p.categories && p.categories.some(c => String(c.id) === String(selectedCategory))
-      );
     }
 
-    renderProducts(filtered);
-  }
+    function renderProducts(products) {
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = '';
+      if (products.length === 0) {
+        grid.innerHTML = '<p style="text-align:center;color:#888;padding:30px;grid-column:1/-1;">No products found.</p>';
+        return;
+      }
+      products.forEach(product => {
+        const soldOut = product.quantity < 1;
+        const categoryNames = product.categories && product.categories.length > 0
+          ? product.categories.map(c => c.name).join(', ')
+          : '';
 
-  // Notify form
-  const notifyForm = document.getElementById("notifyForm");
-  const notifyResponseMsg = document.getElementById("notifyResponseMsg");
-
-  notifyForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const productId = parseInt(document.getElementById("notifyProductId").value);
-    const customerName = document.getElementById("notifyName").value.trim();
-    const customerEmail = document.getElementById("notifyEmail").value.trim();
-    const message = document.getElementById("notifyMessage").value.trim();
-
-    if (!customerName || !customerEmail) {
-      notifyResponseMsg.innerText = "Please fill in your name and contact.";
-      notifyResponseMsg.style.color = "red";
-      return;
-    }
-
-    try {
-      const res = await fetch(`${baseUrl}/request-product`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_id: productId,
-          customer_name: customerName,
-          customer_email: customerEmail,
-          message: message || "No message."
-        })
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+          ${soldOut ? '<span class="sold-out-overlay">Sold Out</span>' : ''}
+          <img src="${product.image_url || 'https://via.placeholder.com/140x140'}" alt="${product.name}" />
+          <div class="product-info">
+            <h3>${product.name}</h3>
+            <p class="price">₦${product.price.toLocaleString()}</p>
+            ${categoryNames ? `<p class="cat-label">${categoryNames}</p>` : ''}
+          </div>`;
+        card.addEventListener('click', () => openModal(product));
+        grid.appendChild(card);
       });
-      const data = await res.json();
-      if (res.ok) {
-        notifyResponseMsg.style.color = "green";
-        notifyResponseMsg.innerText = data.message || "Request submitted!";
-        notifyForm.reset();
-        setTimeout(closeNotifyModal, 2000);
-      } else {
-        notifyResponseMsg.style.color = "red";
-        notifyResponseMsg.innerText = data.detail || "Something went wrong.";
-      }
-    } catch (err) {
-      notifyResponseMsg.style.color = "red";
-      notifyResponseMsg.innerText = "Error connecting to server.";
     }
-  });
 
-  function openNotifyModal() {
-    // ✅ fixed — uses currentModalProduct instead of expecting an argument
-    if (currentModalProduct) {
-      document.getElementById("notifyProductId").value = currentModalProduct.id;
+    function openModal(product) {
+      currentModalProduct = product;
+      const soldOut = product.quantity < 1;
+      document.getElementById('modalImage').src = product.image_url || 'https://via.placeholder.com/300x200';
+      document.getElementById('modalTitle').textContent = product.name;
+      document.getElementById('modalDesc').textContent = product.description || 'No description provided.';
+      document.getElementById('modalPrice').textContent = '₦' + product.price.toLocaleString();
+      document.getElementById('modalQuantity').textContent = soldOut ? 'Out of stock' : `${product.quantity} available`;
+      document.getElementById('soldOutSection').style.display = soldOut ? 'block' : 'none';
+      document.getElementById('buyBtn').style.display = soldOut ? 'none' : 'block';
+      document.getElementById('productModal').style.display = 'flex';
     }
-    document.getElementById("notifyModal").style.display = "block";
-    notifyResponseMsg.innerText = "";
-  }
 
-  function closeNotifyModal() {
-    document.getElementById("notifyModal").style.display = "none";
-  }
+    function closeModal() { document.getElementById('productModal').style.display = 'none'; closeNotifyModal(); }
 
-  async function loadCategories() {
-    try {
-      const res = await fetch(`${baseUrl}/categories`);
-      if (res.ok) {
-        const categories = await res.json();
-        categorySelect.innerHTML = '<option value="">All Categories</option>';
-        categories.forEach(cat => {
-          const opt = document.createElement('option');
-          opt.value = cat.id;
-          opt.textContent = cat.name;
-          categorySelect.appendChild(opt);
+    function modalAddToCart() {
+      if (!currentModalProduct) return;
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const existing = cart.find(i => i.id === currentModalProduct.id);
+      if (existing) { existing.quantity += 1; } else { cart.push({ ...currentModalProduct, quantity: 1 }); }
+      localStorage.setItem('cart', JSON.stringify(cart));
+      alert('Added to cart! 🛒');
+      updateCartCount();
+      closeModal();
+    }
+
+    function updateCartCount() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      document.getElementById('cartCount').innerText = cart.length;
+    }
+
+    function goToCart() { window.location.href = 'cart.html'; }
+
+    function openNotifyModal() {
+      if (currentModalProduct) document.getElementById('notifyProductId').value = currentModalProduct.id;
+      document.getElementById('notifyModal').style.display = 'flex';
+      document.getElementById('notifyResponseMsg').textContent = '';
+    }
+
+    function closeNotifyModal() { document.getElementById('notifyModal').style.display = 'none'; }
+
+    document.getElementById('notifyForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const msg = document.getElementById('notifyResponseMsg');
+      try {
+        const res = await fetch(`${baseUrl}/request-product`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            product_id: parseInt(document.getElementById('notifyProductId').value),
+            customer_name: document.getElementById('notifyName').value.trim(),
+            customer_email: document.getElementById('notifyEmail').value.trim(),
+            message: document.getElementById('notifyMessage').value.trim() || 'No message.'
+          })
         });
-      }
-    } catch (err) {
-      console.error("Error loading categories", err);
-    }
-  }
+        const data = await res.json();
+        if (res.ok) { msg.style.color = 'green'; msg.textContent = '✅ Request submitted!'; this.reset(); setTimeout(closeNotifyModal, 2000); }
+        else { msg.style.color = 'red'; msg.textContent = data.detail || 'Something went wrong.'; }
+      } catch { msg.style.color = 'red'; msg.textContent = 'Network error.'; }
+    });
 
-  categorySelect.addEventListener('change', fetchProducts);
-  sortSelect.addEventListener('change', fetchProducts);
-  searchInput.addEventListener('input', filterProducts);
+    window.onclick = function(e) {
+      if (e.target.id === 'productModal') closeModal();
+      if (e.target.id === 'notifyModal') closeNotifyModal();
+    };
 
-  loadCategories();
-  fetchProducts();
-  updateCartCount();
-</script>
+    document.getElementById('sort').addEventListener('change', fetchProducts);
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+
+    loadCategories();
+    fetchProducts();
+    updateCartCount();
+  </script>
 
 </body>
 </html>
