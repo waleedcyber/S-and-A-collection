@@ -4,11 +4,16 @@ from datetime import datetime
 
 class CategoryCreate(BaseModel):
     name: str
+    parent_id: Optional[int] = None
 
 class CategoryOut(BaseModel):
     id: int
     name: str
+    parent_id: Optional[int] = None
+    children: List["CategoryOut"] = []
     model_config = {"from_attributes": True}
+
+CategoryOut.model_rebuild()  # needed for self-referencing
 
 class ProductCreate(BaseModel):
     name: str

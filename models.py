@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text, Boolean, Table
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship,  backref
 from datetime import datetime
 from db import Base
 
@@ -11,11 +11,14 @@ product_categories = Table(
     Column("category_id", Integer, ForeignKey("categories.id"), primary_key=True),
 )
 
+    
 class Category(Base):
     __tablename__ = "categories"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False, unique=True)
-    products = relationship("Product", secondary=product_categories, back_populates="categories")
+    parent_id = Column(Integer, ForeignKey("categories.id"), nullable=True)  # ✅ new
+    children = relationship("Category", backref=backref("parent", remote_side=[id]))
+    products = relationship("Product", secondary=product_categories, back_populates="categories")    
 
 class Product(Base):
     __tablename__ = "products"

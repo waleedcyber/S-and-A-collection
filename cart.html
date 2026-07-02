@@ -257,6 +257,12 @@
   <div class="cart-container" id="cartContainer"></div>
 
   <script>
+    // Production API base (added)
+    // previously: no base or local dev URLs
+    const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api"; // previously: window.__API_BASE__ || '/api'
+
+    const cartContainer = document.getElementById('cartContainer');
+
     function renderCart() {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       const container = document.getElementById('cartContainer');
@@ -349,5 +355,22 @@
 
     renderCart();
   </script>
+  
+  <footer style="background:#111827;color:#f3f4f6;padding:24px 12px;margin-top:24px;text-align:center;">
+    <div style="max-width:1000px;margin:0 auto;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;">
+      <div style="flex:1;min-width:200px;text-align:left;color:#e5e7eb;">
+        <strong>S&S Collection</strong>
+        <div style="font-size:14px;color:#9ca3af;margin-top:6px;">Quality products at friendly prices — serving customers across Nigeria.</div>
+      </div>
+      <div style="flex:1;min-width:200px;text-align:center;color:#e5e7eb;">
+        <a href="/about.html" style="color:#9ca3af;text-decoration:none;margin-right:12px;">About</a>
+        <a href="/contact.html" style="color:#9ca3af;text-decoration:none;margin-right:12px;">Contact</a>
+        <a href="/Privacy.html" style="color:#9ca3af;text-decoration:none;">Privacy</a>
+      </div>
+      <div style="flex:1;min-width:200px;text-align:right;color:#9ca3af;">
+        © 2026 S&S Collection
+      </div>
+    </div>
+  </footer>
 </body>
 </html>

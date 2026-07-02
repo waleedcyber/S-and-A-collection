@@ -11,14 +11,19 @@
       font-family: Arial, sans-serif;
       background-color: #f0f2f5;
     }
-
     header {
       background-color: #333;
       color: white;
       padding: 20px;
       text-align: center;
     }
-
+    header a {
+      color: #aaa;
+      text-decoration: none;
+      font-size: 14px;
+      margin-left: 20px;
+    }
+    header a:hover { color: white; }
     .form-container {
       max-width: 600px;
       margin: 40px auto;
@@ -27,44 +32,86 @@
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
-
     .form-container h2 {
       text-align: center;
       margin-bottom: 20px;
     }
-
-    input, select, textarea, button {
+    input, select, textarea {
       width: 100%;
       padding: 12px;
       margin: 10px 0;
       border-radius: 8px;
       border: 1px solid #ccc;
       font-size: 16px;
+      box-sizing: border-box;
     }
-
     button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
       background-color: #28a745;
       color: white;
       cursor: pointer;
     }
-
-    button:hover {
-      background-color: #218838;
+    button:hover { background-color: #218838; }
+    #categoryCheckboxes {
+      margin: 10px 0;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+    #responseMsg {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 15px;
+      font-weight: bold;
     }
   </style>
+</head>
+<body>
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
+  <header>
+    <h1>Upload New Product</h1>
+    <a href="admin_home.html">← Back to Dashboard</a>
+  </header>
 
-  const token = localStorage.getItem("token");
-  if (!token) {
-    alert("Access denied. Please log in first.");
-    window.location.href = "admin_login.html";
-  }
+  <div class="form-container">
+    <h2>Product Details</h2>
 
-  const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api";
+    <form id="productForm">
+      <input type="text" name="name" placeholder="Product Name" required />
+      <textarea name="description" placeholder="Product Description" rows="3"></textarea>
+      <input type="number" name="price" placeholder="Price (₦)" step="0.01" required />
+      <input type="number" name="quantity" placeholder="Quantity in Stock" required />
 
-  async function fetchCategories() {
+      <label style="font-size: 15px; color: #555;">Category</label>
+      <div id="categoryCheckboxes">Loading categories...</div>
+
+      <label style="font-size: 15px; color: #555;">Product Image</label>
+      <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" required />
+
+      <button type="submit">Upload Product</button>
+    </form>
+
+    <p id="responseMsg"></p>
+  </div>
+
+  <!-- ✅ Script is at the bottom AFTER the HTML elements exist -->
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Access denied. Please log in first.");
+      window.location.href = "admin_login.html";
+    }
+
+    const baseUrl = "https://s-and-s-collection-32bh.onrender.com/api";
+
+async function fetchCategories() {
+  try {
     const res = await fetch(`${baseUrl}/admin/categories`, {
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -72,54 +119,87 @@ document.addEventListener("DOMContentLoaded", function() {
       const categories = await res.json();
       const container = document.getElementById("categoryCheckboxes");
       container.innerHTML = "";
-      categories.forEach(cat => {
+
+      // Separate parents and children
+      const parents = categories.filter(c => !c.parent_id);
+      const children = categories.filter(c => c.parent_id);
+
+      if (parents.length === 0) {
+        container.textContent = "No categories found. Add some first.";
+        return;
+      }
+
+      parents.forEach(parent => {
+        const parentChildren = children.filter(c => c.parent_id === parent.id);
+
+        // Parent label (not selectable, just a group header)
         container.innerHTML += `
-          <label style="display:flex; align-items:center; gap:10px; padding:6px 0; font-size:16px; cursor:pointer;">
-            <input type="checkbox" value="${cat.id}" style="width:20px; height:20px;">
-            ${cat.name}
-          </label>`;
+          <p style="font-weight:bold; color:#333; margin:10px 0 4px; font-size:15px;">
+            📁 ${parent.name}
+          </p>`;
+
+        if (parentChildren.length > 0) {
+          // Show subcategories as checkboxes
+          parentChildren.forEach(child => {
+            container.innerHTML += `
+              <label style="display:flex; align-items:center; gap:10px; padding:6px 0 6px 16px; font-size:15px; cursor:pointer;">
+                <input type="checkbox" value="${child.id}" style="width:20px; height:20px;">
+                ${child.name}
+              </label>`;
+          });
+        } else {
+          // No subcategories — parent itself is selectable
+          container.innerHTML += `
+            <label style="display:flex; align-items:center; gap:10px; padding:6px 0 6px 16px; font-size:15px; cursor:pointer;">
+              <input type="checkbox" value="${parent.id}" style="width:20px; height:20px;">
+              ${parent.name}
+            </label>`;
+        }
       });
     }
+  } catch (err) {
+    document.getElementById("categoryCheckboxes").textContent = "Failed to load categories.";
   }
+}
 
-  document.getElementById("productForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
+    document.getElementById("productForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
 
-    const formData = new FormData(this);
+      const formData = new FormData(this);
 
-    const checked = document.querySelectorAll('#categoryCheckboxes input[type=checkbox]:checked');
-    const selectedIds = Array.from(checked).map(c => c.value).join(',');
+      // Get selected category — just use the first checked one (your API takes one category_id)
+      const checked = document.querySelectorAll('#categoryCheckboxes input[type=checkbox]:checked');
+      if (checked.length === 0) {
+        document.getElementById("responseMsg").style.color = "red";
+        document.getElementById("responseMsg").textContent = "Please select at least one category.";
+        return;
+      }
 
-    if (!selectedIds) {
-      document.getElementById("responseMsg").style.color = "red";
-      document.getElementById("responseMsg").textContent = "Please select at least one category.";
-      return;
-    }
+      // Append category_id (single value since your API uses category_id not category_ids)
+      const selectedIds = Array.from(checked).map(c => c.value).join(',');
+      formData.append("category_ids", selectedIds);
 
-    formData.append("category_ids", selectedIds);
+      const res = await fetch(`${baseUrl}/admin/upload`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
 
-    const res = await fetch(`${baseUrl}/admin/upload`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData
+      const msg = document.getElementById("responseMsg");
+      if (res.ok) {
+        msg.style.color = "green";
+        msg.textContent = "Product uploaded successfully!";
+        this.reset();
+        document.querySelectorAll('#categoryCheckboxes input[type=checkbox]').forEach(cb => cb.checked = false);
+      } else {
+       const data = await res.json();
+       msg.style.color = "red";
+       msg.textContent = data.detail || data.message || JSON.stringify(data) || "Upload failed.";
+      }
     });
 
-    const msg = document.getElementById("responseMsg");
-    if (res.ok) {
-      msg.style.color = "green";
-      msg.textContent = "Product uploaded successfully!";
-      this.reset();
-      document.querySelectorAll('#categoryCheckboxes input[type=checkbox]').forEach(cb => cb.checked = false);
-    } else {
-      const data = await res.json();
-      msg.style.color = "red";
-      msg.textContent = data.detail || "Upload failed.";
-    }
-  });
+    fetchCategories();
+  </script>
 
-  fetchCategories();
-
-}); // end DOMContentLoaded
-</script>
 </body>
 </html>
